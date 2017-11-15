@@ -8,9 +8,11 @@ public:
   Shader(char shaderType, bool fileSource, const char* shaderSource);
   ~Shader();
   void attach(GLuint shprog);
+  char getType();
   GLint status();
 private:
   GLuint shHnd;
+  char type;
   GLint stat;
 };
 

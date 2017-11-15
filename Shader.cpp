@@ -1,7 +1,8 @@
 #include "Shader.h"
 
 Shader::Shader(char shaderType, bool fileSource, const char* shaderSource){
-  this->stat = 1;
+  this->stat = GL_TRUE;
+  this->type = shaderType;
   switch(shaderType){
     case 0:
       this->shHnd = glCreateShader(GL_VERTEX_SHADER);
@@ -13,10 +14,10 @@ Shader::Shader(char shaderType, bool fileSource, const char* shaderSource){
       this->shHnd = glCreateShader(GL_FRAGMENT_SHADER);
       break;
     default:
-      this->stat = -1;
+      this->stat = GL_FALSE;
   }
 
-  if(this->stat >= 0){
+  if(this->stat != GL_FALSE){
 
     if(fileSource){
       std::ifstream fileInput;
@@ -48,6 +49,50 @@ void Shader::attach(GLuint shprog){
   glAttachShader(shprog, this->shHnd);
 }
 
+char Shader::getType(){
+  return this->type;
+}
+
 GLint Shader::status(){
+  return this->stat;
+}
+
+ShaderProgram::ShaderProgram(Shader* vs, Shader* gs, Shader* fs){
+  this->spHnd = glCreateProgram();
+  if(vs!=NULL){
+    if((vs.stat!=GL_FALSE)&&(vs.getType()==0)){
+      vs.attach(this->spHnd);
+    }else{
+      std::cerr << "Vertex shader invalid" << std::endl;
+    }
+  }else{
+    std::cerr << "No vertex shader" << std::endl;
+  }
+  if(gs!=NULL){
+    if((gs.stat!=GL_FALSE)&&(gs.getType()==1)){
+      gs.attach(this->spHnd);
+    }else{
+      std::cerr << "Geometry shader invalid" << std::endl;
+    }
+  }
+  if(fs!=NULL){
+    if((fs.stat!=GL_FALSE)&&(fs.getType()==2)){
+      fs.attach(this->spHnd);
+    }else{
+      std::cerr << "Fragment shader invalid" << std::endl;
+    }
+  }else{
+    std::cerr << "No fragment shader" << std::endl;
+  }
+
+  glLinkProgram(this->spHnd);
+  glGetProgramiv(this->spHnd, GL_LINK_STATUS, &(this->stat));
+}
+
+void ShaderProgram::use(){
+  glUseProgram(this->spHnd);
+}
+
+GLint ShaderProgram::status(){
   return this->stat;
 }
