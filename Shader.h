@@ -5,23 +5,24 @@
 
 class Shader{
 public:
-  Shader(char shaderType, bool sourceType, void* shaderSource);
+  Shader(char shaderType, bool fileSource, void* shaderSource);
   ~Shader();
-  void compile();
+  void attach(GLuint shprog);
+  GLint status();
 private:
-  char* source;
   GLuint shHnd;
+  GLint stat;
 };
 
 class ShaderProgram{
 public:
   ShaderProgram(Shader* vs, Shader* gs, Shader* fs);
   ~ShaderProgram();
-  void link();
   void use();
-  int status();
+  GLint status();
 private:
   GLuint spHnd;
+  GLint stat;
 };
 
 #endif
