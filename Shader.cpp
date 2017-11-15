@@ -60,8 +60,8 @@ GLint Shader::status(){
 ShaderProgram::ShaderProgram(Shader* vs, Shader* gs, Shader* fs){
   this->spHnd = glCreateProgram();
   if(vs!=NULL){
-    if((vs.stat!=GL_FALSE)&&(vs.getType()==0)){
-      vs.attach(this->spHnd);
+    if((vs->status()!=GL_FALSE)&&(vs->getType()==0)){
+      vs->attach(this->spHnd);
     }else{
       std::cerr << "Vertex shader invalid" << std::endl;
     }
@@ -69,15 +69,15 @@ ShaderProgram::ShaderProgram(Shader* vs, Shader* gs, Shader* fs){
     std::cerr << "No vertex shader" << std::endl;
   }
   if(gs!=NULL){
-    if((gs.stat!=GL_FALSE)&&(gs.getType()==1)){
-      gs.attach(this->spHnd);
+    if((gs->status()!=GL_FALSE)&&(gs->getType()==1)){
+      gs->attach(this->spHnd);
     }else{
       std::cerr << "Geometry shader invalid" << std::endl;
     }
   }
   if(fs!=NULL){
-    if((fs.stat!=GL_FALSE)&&(fs.getType()==2)){
-      fs.attach(this->spHnd);
+    if((fs->status()!=GL_FALSE)&&(fs->getType()==2)){
+      fs->attach(this->spHnd);
     }else{
       std::cerr << "Fragment shader invalid" << std::endl;
     }
