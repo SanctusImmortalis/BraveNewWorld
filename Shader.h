@@ -5,7 +5,7 @@
 
 class Shader{
 public:
-  Shader(char shaderType, bool fileSource, void* shaderSource);
+  Shader(char shaderType, bool fileSource, const char* shaderSource);
   ~Shader();
   void attach(GLuint shprog);
   GLint status();

@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-Shader::Shader(char shaderType, bool fileSource, char* shaderSource){
+Shader::Shader(char shaderType, bool fileSource, const char* shaderSource){
   this->stat = 1;
   switch(shaderType){
     case 0:
@@ -26,7 +26,7 @@ Shader::Shader(char shaderType, bool fileSource, char* shaderSource){
         fileInput.open(shaderSource);
         strm << fileInput.rdbuf();
         fileInput.close();
-        shaderSource = strm.str().c_str()
+        shaderSource = strm.str().c_str();
       }catch(std::ifstream::failure e){
         std::cerr << "Couldn't read file" << std::endl;
       }
