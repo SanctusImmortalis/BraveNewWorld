@@ -19,6 +19,7 @@ public:
   ~ShaderProgram();
   void link();
   void use();
+  int status();
 private:
   GLuint spHnd;
 };
