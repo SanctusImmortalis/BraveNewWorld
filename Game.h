@@ -2,7 +2,8 @@
 #define GAME_H
 
 #include "Base.h"
-#include "Entity.h"
+#include "GameMap.h"
+#include "Camera.h"
 
 class Game{
 public:
@@ -10,7 +11,8 @@ public:
   ~Game();
 private:
   GLFWwindow* window;
-  Entity ents[100];
+  Camera cam;
+  GameMap m;
 };
 
 #endif
