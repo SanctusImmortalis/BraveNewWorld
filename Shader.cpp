@@ -89,6 +89,10 @@ ShaderProgram::ShaderProgram(Shader* vs, Shader* gs, Shader* fs){
   glGetProgramiv(this->spHnd, GL_LINK_STATUS, &(this->stat));
 }
 
+ShaderProgram::~ShaderProgram(){
+  glDeleteProgram(this->spHnd);
+}
+
 void ShaderProgram::use(){
   glUseProgram(this->spHnd);
 }

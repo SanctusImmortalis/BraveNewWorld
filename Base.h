@@ -9,5 +9,6 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 #endif
