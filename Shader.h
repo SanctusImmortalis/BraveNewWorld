@@ -21,6 +21,7 @@ public:
   ShaderProgram(Shader* vs, Shader* gs, Shader* fs);
   ~ShaderProgram();
   void use();
+  GLint getUniform(char* name);
   GLint status();
 private:
   GLuint spHnd;
