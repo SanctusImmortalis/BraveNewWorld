@@ -97,7 +97,7 @@ void ShaderProgram::use(){
   glUseProgram(this->spHnd);
 }
 
-GLint ShaderProgram::getUniform(char* name){
+GLint ShaderProgram::getUniform(const char* name){
   return glGetUniformLocation(this->spHnd, name);
 }
 

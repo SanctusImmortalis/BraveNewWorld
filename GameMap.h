@@ -2,6 +2,7 @@
 #define GAME_MAP_H
 
 #include "Base.h"
+#include "Shader.h"
 #include "Entity.h"
 #include "Camera.h"
 #include "GameObject.h"
@@ -11,6 +12,7 @@ class Brush : public GameObject{
 public:
   Brush(std::vector<Vertex> v, Texture diff, Texture spec, std::vector<GLuint> i, glm::vec3 pos, glm::vec3 rot, glm::vec3 scale);
   ~Brush();
+  void draw();
 private:
   GLuint VAO, VBO, EBO;
   std::vector<Vertex> vertices;
@@ -18,9 +20,13 @@ private:
   std::vector<GLuint> indices;
   glm::vec3 position, rotation, scalefactor;
   glm::mat4 model;
+  bool updateModel;
 };
 
 class GameMap{
+public:
+  ShaderProgram entityShader;
+  ShaderProgram brushShader;
 private:
   Camera cam;
   std::vector<Entity> ents;

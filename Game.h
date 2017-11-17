@@ -12,8 +12,7 @@ public:
 private:
   GLFWwindow* window;
   GameMap m;
-  ShaderProgram entityShader;
-  ShaderProgram brushShader;
+
 };
 
 #endif
