@@ -37,18 +37,18 @@ Brush::Brush(std::vector<Vertex> v, Texture diff, Texture spec, std::vector<GLui
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   int w, h, c;
-  unsigned char* img1 = loadImg(diff.path.c_str(), &w, &h, &c);
+  unsigned char* img = loadImg(diff.path.c_str(), &w, &h, &c);
   glGenTextures(1, &(diff.texHnd));
   glBindTexture(GL_TEXTURE_2D, diff.texHnd);
   switch(c){
     case 1:
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, img1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, img);
     break;
     case 3:
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, img1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
     break;
     case 4:
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
     break;
   }
   glGenerateMipmap(GL_TEXTURE_2D);
@@ -56,20 +56,20 @@ Brush::Brush(std::vector<Vertex> v, Texture diff, Texture spec, std::vector<GLui
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  freeImg(img1);
+  freeImg(img);
 
-  unsigned char* img2 = loadImg(spec.path.c_str(), &w, &h, &c);
+  img = loadImg(spec.path.c_str(), &w, &h, &c);
   glGenTextures(1, &(spec.texHnd));
   glBindTexture(GL_TEXTURE_2D, spec.texHnd);
   switch(c){
     case 1:
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, img2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, img);
     break;
     case 3:
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, img2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
     break;
     case 4:
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
     break;
   }
   glGenerateMipmap(GL_TEXTURE_2D);
@@ -77,7 +77,7 @@ Brush::Brush(std::vector<Vertex> v, Texture diff, Texture spec, std::vector<GLui
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  freeImg(img2);
+  freeImg(img);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 }
