@@ -20,7 +20,7 @@ public:
 private:
   GLuint VAO, VBO, EBO;
   bool customShader;
-  std::vector<Vextex> vertices;
+  std::vector<Vertex> vertices;
   std::vector<Texture> textures;
   std::vector<GLuint> indices;
 };

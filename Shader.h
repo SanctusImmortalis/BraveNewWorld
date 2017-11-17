@@ -18,6 +18,7 @@ private:
 
 class ShaderProgram{
 public:
+  ShaderProgram() {}
   ShaderProgram(Shader* vs, Shader* gs, Shader* fs);
   ~ShaderProgram();
   void use();

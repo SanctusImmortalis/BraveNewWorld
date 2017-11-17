@@ -94,7 +94,7 @@ void Brush::draw(){
     this->model = glm::scale(glm::rotate(glm::translate(this->model, this->position), glm::radians(180.0f), this->rotation), this->scalefactor);
     this->updateModel = false;
   }
-  ShaderProgram* shp = &(currentMap->brushShader);
+  ShaderProgram* shp = &(Brush::brushShader);
   shp->use();
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(this->model));

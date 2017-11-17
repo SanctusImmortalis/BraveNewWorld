@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i, glm::vec3 pos, glm::vec3 rot, glm::vec3 scale){
+Mesh::Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i){
   this->vertices = v;
   this->textures = t;
   this->indices = i;
@@ -50,7 +50,7 @@ void Mesh::draw(glm::mat4 model){
       texUniform = shp->getUniform(("material.specular" + std::to_string(nrSpec)).c_str());
     }
     if(texUniform<0) break;
-    glUniform1i(i);
+    glUniform1i(texUniform, i);
   }
 
   glBindVertexArray(this->VAO);
@@ -60,14 +60,14 @@ void Mesh::draw(glm::mat4 model){
 }
 
 
-void enableCustomShader(){
+void Mesh::enableCustomShader(){
   this->customShader = true;
 }
 
-void disableCustomShader(){
+void Mesh::disableCustomShader(){
   this->customShader = false;
 }
 
-void toggleCustomShader(){
+void Mesh::toggleCustomShader(){
   this->customShader = !(this->customShader);
 }
