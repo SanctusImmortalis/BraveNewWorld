@@ -4,18 +4,7 @@
 #include "Base.h"
 #include "ImageLoader.h"
 #include "Shader.h"
-
-typedef struct {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 texCoords;
-} Vertex;
-
-typedef struct {
-  GLuint texHnd;
-  bool isDiffuse;
-  string path;
-} Texture;
+#include "DrawData.h"
 
 class Mesh {
 public:
