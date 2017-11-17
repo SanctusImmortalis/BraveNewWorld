@@ -4,9 +4,14 @@
 #include "Base.h"
 #include "Entity.h"
 
+class Brush{
+  
+};
+
 class GameMap{
 private:
-  Entity ents[100];
+  std::vector<Entity> ents;
+  std::vector<Brush> brushes;
 };
 
 #endif
