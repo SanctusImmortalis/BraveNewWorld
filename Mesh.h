@@ -11,11 +11,14 @@ public:
   Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i);
   Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i, ShaderProgram p);
   ~Mesh();
-  void draw(glm::mat4 model, bool, updateModel);
+  void draw(glm::mat4 model);
+  void enableCustomShader();
+  void disableCustomShader();
+  void toggleCustomShader();
   static ShaderProgram entityShader;
+  ShaderProgram prog;
 private:
   GLuint VAO, VBO, EBO;
-  ShaderProgram prog;
   bool customShader;
   std::vector<Vextex> vertices;
   std::vector<Texture> textures;

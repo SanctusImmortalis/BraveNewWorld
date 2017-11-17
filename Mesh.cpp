@@ -1,14 +1,10 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> v, vector<Texture> t, std::vector<GLuint> i, glm::vec3 pos, glm::vec3 rot, glm::vec3 scale){
+Mesh::Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i, glm::vec3 pos, glm::vec3 rot, glm::vec3 scale){
   this->vertices = v;
   this->textures = t;
   this->indices = i;
-  this->position = pos;
-  this->rotation = rot;
-  this->scalefactor = scale;
-  this->model = glm::mat4(1.0f);
-  this->updateModel = true;
+  this->customShader = false;
 
   glGenVertexArrays(1, &(this->VAO));
   glGenBuffers(1, &(this->VBO));
@@ -30,9 +26,6 @@ Mesh::Mesh(std::vector<Vertex> v, vector<Texture> t, std::vector<GLuint> i, glm:
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  int w, h, c;
-  unsigned char* img = loadImg(diff.path.c_str(), &w, &h, &c);
 }
 
 void Mesh::draw(glm::mat4 model){
@@ -44,13 +37,37 @@ void Mesh::draw(glm::mat4 model){
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
 
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, (this->specular).texHnd);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, (this->diffuse).texHnd);
+  GLint texUniform = 0;
+  unsigned int nrDiff = 0, nrSpec = 0;
+  for(int i = 0; (i<(this->textures).size())&&(i<16);i++){
+    glActiveTexture(GL_TEXTURE0 + i);
+    glBindTexture(GL_TEXTURE_2D, (this->textures)[i].texHnd);
+    if((this->textures)[i].isDiffuse){
+      nrDiff += 1;
+      texUniform = shp->getUniform(("material.diffuse" + std::to_string(nrDiff)).c_str());
+    }else{
+      nrSpec += 1;
+      texUniform = shp->getUniform(("material.specular" + std::to_string(nrSpec)).c_str());
+    }
+    if(texUniform<0) break;
+    glUniform1i(i);
+  }
 
   glBindVertexArray(this->VAO);
   glDrawElements(GL_TRIANGLES, (this->indices).size(), GL_UNSIGNED_INT, 0);
 
   glBindVertexArray(0);
+}
+
+
+void enableCustomShader(){
+  this->customShader = true;
+}
+
+void disableCustomShader(){
+  this->customShader = false;
+}
+
+void toggleCustomShader(){
+  this->customShader = !(this->customShader);
 }
