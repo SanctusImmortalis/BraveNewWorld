@@ -37,20 +37,25 @@ void Mesh::draw(glm::mat4 model){
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
 
-  GLint texUniform = 0;
-  unsigned int nrDiff = 0, nrSpec = 0;
-  for(int i = 0; (i<(this->textures).size())&&(i<16);i++){
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, (this->textures)[i].texHnd);
-    if((this->textures)[i].isDiffuse){
-      nrDiff += 1;
-      texUniform = shp->getUniform(("material.diffuse" + std::to_string(nrDiff)).c_str());
-    }else{
-      nrSpec += 1;
-      texUniform = shp->getUniform(("material.specular" + std::to_string(nrSpec)).c_str());
+  {
+    GLint texUniform = 0;
+    unsigned int nrDiff = 0, nrSpec = 0;
+    for(int i = 0; (i<(this->textures).size())&&(i<16);i++){
+      std::stringstream ss;
+      glActiveTexture(GL_TEXTURE0 + i);
+      glBindTexture(GL_TEXTURE_2D, (this->textures)[i].texHnd);
+      if((this->textures)[i].isDiffuse){
+        nrDiff += 1;
+        ss << nrDiff;
+        texUniform = shp->getUniform(("material.diffuse" + ss.str()).c_str());
+      }else{
+        nrSpec += 1;
+        ss << nrSpec;
+        texUniform = shp->getUniform(("material.specular" + ss.str()).c_str());
+      }
+      if(texUniform<0) break;
+      glUniform1i(texUniform, i);
     }
-    if(texUniform<0) break;
-    glUniform1i(texUniform, i);
   }
 
   glBindVertexArray(this->VAO);

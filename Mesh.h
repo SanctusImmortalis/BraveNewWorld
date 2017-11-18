@@ -2,7 +2,6 @@
 #define GAME_MESH_H
 
 #include "Base.h"
-#include "ImageLoader.h"
 #include "Shader.h"
 #include "DrawData.h"
 
