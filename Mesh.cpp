@@ -28,6 +28,12 @@ Mesh::Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+Mesh::~Mesh(){
+  glDeleteVertexArrays(1, &(this->VAO));
+  glDeleteBuffers(1, &(this->VBO));
+  glDeleteBuffers(1, &(this->EBO));
+}
+
 void Mesh::draw(glm::mat4 model){
   ShaderProgram* shp = &(Mesh::entityShader);
   if(this->customShader){
@@ -56,6 +62,10 @@ void Mesh::draw(glm::mat4 model){
       if(texUniform<0) break;
       glUniform1i(texUniform, i);
     }
+    texUniform = shp->getUniform("nrDiff");
+    glUniform1i(texUniform, nrDiff);
+    texUniform = shp->getUniform("nrSpec");
+    glUniform1i(texUniform, nrSpec);
   }
 
   glBindVertexArray(this->VAO);
