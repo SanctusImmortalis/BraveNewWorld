@@ -4,7 +4,6 @@ Mesh::Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i)
   this->vertices = v;
   this->textures = t;
   this->indices = i;
-  this->customShader = false;
 
   glGenVertexArrays(1, &(this->VAO));
   glGenBuffers(1, &(this->VBO));
@@ -34,10 +33,10 @@ Mesh::~Mesh(){
   glDeleteBuffers(1, &(this->EBO));
 }
 
-void Mesh::draw(glm::mat4 model){
+void Mesh::draw(glm::mat4 model, ShaderProgram* prog){
   ShaderProgram* shp = &(Mesh::entityShader);
-  if(this->customShader){
-    shp = &(this->prog);
+  if(prog!=NULL){
+    shp = prog;
   }
   shp->use();
   GLint modelUniform = shp->getUniform("model");
@@ -72,17 +71,4 @@ void Mesh::draw(glm::mat4 model){
   glDrawElements(GL_TRIANGLES, (this->indices).size(), GL_UNSIGNED_INT, 0);
 
   glBindVertexArray(0);
-}
-
-
-void Mesh::enableCustomShader(){
-  this->customShader = true;
-}
-
-void Mesh::disableCustomShader(){
-  this->customShader = false;
-}
-
-void Mesh::toggleCustomShader(){
-  this->customShader = !(this->customShader);
 }

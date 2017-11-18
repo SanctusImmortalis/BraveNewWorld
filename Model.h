@@ -8,14 +8,19 @@
 
 class Model{
 public:
-  Model(char* path);
-  void draw(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale);
+  Model(char* path, ShaderProgram p, bool customShader);
+  void draw(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, bool updateModel);
+  void enableCustomShader();
+  void disableCustomShader();
+  void toggleCustomShader();
 private:
   glm::mat4 model;
+  ShaderProgram prog;
+  bool customShader;
   std::vector<Mesh> meshes;
   std::string directory;
   void processNode(aiNode *node, const aiScene *scene);
-  void loadMesh(aiMesh *mesh, const aiScene *scene);
+  Mesh loadMesh(aiMesh *mesh, const aiScene *scene);
 };
 
 #endif
