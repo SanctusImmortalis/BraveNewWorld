@@ -59,9 +59,9 @@ void InputTeclado(Movimento_Cam direcao, float deltaTime)
 {
   float velocidade = VelocidadeMovimento * deltaTime;
   if(direcao == FRENTE)
-    Posicao += Frente * velocidade;
+    Posicao += glm::normalize(glm::vec3(Frente.x, 0.0f, Frente.z)) * velocidade;
   if(direcao == TRAS)
-    Posicao -= Frente * velocidade;
+    Posicao -= glm::normalize(glm::vec3(Frente.x, 0.0f, Frente.z)) * velocidade;
   if(direcao == ESQUERDA)
     Posicao -= Direita * velocidade;
   if(direcao == DIREITA)

@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "Base.h"
+#include "ImageLoader.h"
 #include "GameMap.h"
 #include "Shader.h"
 

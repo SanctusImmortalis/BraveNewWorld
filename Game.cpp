@@ -2,7 +2,30 @@
 
 //Brush brushes[1];
 
-Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+const char* vertexShaderSource = "#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aNormals;\n"
+"layout (location = 2) in vec2 aTexCoords;\n"
+"uniform mat4 model;\n"
+"layout (std140) uniform Matrices{"
+"mat4 view;\n"
+"mat4 projection;\n"
+"};\n"
+"out vec2 tc;\n"
+"out vec3 norm;\n"
+"void main(){\n"
+"gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
+"norm = mat3(transpose(inverse(model))) * aNormals;\n"
+"tc = aTexCoords;\n}\0";
+
+const char* fragmentShaderSource = "#version 330 core\n"
+"in vec2 tc;\n"
+"out vec4 FragColor;\n"
+"uniform sampler2D tex;\n"
+"void main(){\n"
+"FragColor = texture(tex, tc);\n}\0";
+
+Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 7.0f));
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 float ultX = SCR_WIDTH / 2.0;
@@ -23,26 +46,98 @@ void initMap(GameMap* m){
   std::vector<Vertex> v;
   std::vector<GLuint> i;
   Texture td, ts;
+  int w, h, c;
+  unsigned char* img = loadImg("wall.png", &w, &h, &c);
+  glGenTextures(1, &(td.texHnd));
+  glBindTexture(GL_TEXTURE_2D, td.texHnd);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    freeImg(img);
 
   Vertex vt;
-  vt.position = glm::vec3(-1.0f, -1.0f, 0.0f);
+  vt.position = glm::vec3(-5.0f, -5.0f, 0.0f);
+  vt.texCoords = glm::vec2(0.0f, 0.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(1.0f, -1.0f, 0.0f);
+  vt.position = glm::vec3(5.0f, -5.0f, 0.0f);
+  vt.texCoords = glm::vec2(5.0f, 0.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(-1.0f, 1.0f, 0.0f);
+  vt.position = glm::vec3(-5.0f, 5.0f, 0.0f);
+  vt.texCoords = glm::vec2(0.0f, 5.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(1.0f, 1.0f, 0.0f);
+  vt.position = glm::vec3(5.0f, 5.0f, 0.0f);
+  vt.texCoords = glm::vec2(5.0f, 5.0f);
   v.push_back(vt);
+  vt.position = glm::vec3(5.0f, 5.0f, -1.0f);
+  vt.texCoords = glm::vec2(5.0f, 6.0f);
+  v.push_back(vt);
+  vt.position = glm::vec3(5.0f, -5.0f, -1.0f);
+  vt.texCoords = glm::vec2(5.0f, 1.0f);
+  v.push_back(vt);
+  vt.position = glm::vec3(-5.0f, -5.0f, -1.0f);
+  vt.texCoords = glm::vec2(5.0f, 1.0f);
+  v.push_back(vt);
+  vt.position = glm::vec3(-5.0f, 5.0f, -1.0f);
+  vt.texCoords = glm::vec2(5.0f, 6.0f);
+  v.push_back(vt);
+
 
   i.push_back(0);
   i.push_back(1);
   i.push_back(2);
+
   i.push_back(1);
   i.push_back(3);
   i.push_back(2);
 
-  const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;layout (location = 1) in vec3 normals;layout (location = 2) in vec2 texCoords;out vec2 tc;uniform mat4 model;layout (std140) uniform Matrices{mat4 view; mat4 projection;};\nvoid main(){gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);tc = vec2(texCoords.x, texCoords.y);}";
-  const char* fragmentShaderSource = "#version 330 core\nin vec2 tc;out vec4 FragColor;uniform sampler2D tex;\nvoid main(){FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);}";
+  i.push_back(1);
+  i.push_back(4);
+  i.push_back(3);
+
+  i.push_back(1);
+  i.push_back(5);
+  i.push_back(4);
+
+  i.push_back(5);
+  i.push_back(6);
+  i.push_back(4);
+
+  i.push_back(4);
+  i.push_back(6);
+  i.push_back(7);
+
+  i.push_back(0);
+  i.push_back(2);
+  i.push_back(6);
+
+  i.push_back(2);
+  i.push_back(7);
+  i.push_back(6);
+
+  i.push_back(2);
+  i.push_back(3);
+  i.push_back(7);
+
+  i.push_back(7);
+  i.push_back(3);
+  i.push_back(4);
+
+  i.push_back(0);
+  i.push_back(1);
+  i.push_back(6);
+
+  i.push_back(6);
+  i.push_back(1);
+  i.push_back(5);
+
+  //const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;layout (location = 1) in vec3 normals;layout (location = 2) in vec2 texCoords;out vec2 tc;uniform mat4 model;layout (std140) uniform Matrices{mat4 view; mat4 projection;};\nvoid main(){gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);tc = vec2(texCoords.x, texCoords.y);}";
+  //const char* fragmentShaderSource = "#version 330 core\nin vec2 tc;out vec4 FragColor;uniform sampler2D tex;\nvoid main(){FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);}";
     Shader vs(0, false, vertexShaderSource);
   Shader fs(2, false, fragmentShaderSource);
   ShaderProgram* brushShader = new ShaderProgram(&vs, NULL, &fs);
@@ -55,9 +150,9 @@ void initMap(GameMap* m){
   m->entnum = 0;
 
   //Brush* obj = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushes[0] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushes[1] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushnum = 2;
+  m->brushes[0] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  //m->brushes[1] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+  m->brushnum = 1;
 }
 
 void processInput(GLFWwindow *window){
@@ -119,7 +214,7 @@ Game::Game(){
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -129,6 +224,8 @@ Game::Game(){
     }
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
 
     this->m = new GameMap(initMap);
 }
