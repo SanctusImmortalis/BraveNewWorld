@@ -2,21 +2,21 @@
 #define GAME_MODEL_H
 
 #include "Mesh.h"
+#include "AABB.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 class Model{
 public:
-  Model(char* path, ShaderProgram p, bool customShader);
+  Model(char* path, ShaderProgram* p);
   void draw(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, bool updateModel);
-  void enableCustomShader();
-  void disableCustomShader();
-  void toggleCustomShader();
+  void setActiveShader(size_t num);
+  AABB genBoundingBox();
 private:
   glm::mat4 model;
-  ShaderProgram prog;
-  bool customShader;
+  size_t activeShader;
+  ShaderProgram* prog;
   std::vector<Mesh> meshes;
   std::string directory;
   void processNode(aiNode *node, const aiScene *scene);

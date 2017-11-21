@@ -2,12 +2,14 @@
 #define GAME_OBJ_H
 
 #include "Base.h"
+#include "AABB.h"
 
 class GameObject{
+public:
+  GameObject() {}
+  bool checkCollision(AABB other);
 protected:
-  glm::vec3 position, rotation, scalefactor;
-  glm::mat4 model;
-  bool updateModel;
+
 };
 
 #endif

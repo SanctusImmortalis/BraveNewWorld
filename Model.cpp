@@ -1,12 +1,9 @@
 #include "Model.h"
 #include "ImageLoader.h"
 
-Model::Model(char* path, ShaderProgram p, bool customShader){
+Model::Model(char* path, ShaderProgram* p){
   this->model = glm::mat4(1.0f);
-  if(customShader){
-    this->prog = p;
-  }
-  this->customShader = customShader;
+  this->prog = p;
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes);
   if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode){
@@ -120,31 +117,31 @@ Mesh Model::loadMesh(aiMesh *mesh, const aiScene *scene){
 
 
 
-void Model::draw(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, bool updateModel){
+void Model::draw(glm::vec3 position, glm::vec3 rotation, glm::vec3 scalefactor, bool updateModel){
   if(updateModel){
     this->model = glm::mat4(1.0f);
-    this->model = glm::scale(glm::rotate(glm::translate(this->model, pos), glm::radians(180.0f), rot), scale);
+    glm::mat4 scale = glm::scale(this->model, scalefactor);
+    glm::mat4 rot;
+    glm::mat4 trans = glm::translate(this->model, position);
+    {
+      glm::vec4 x_axis(1.0f, 0.0f, 0.0f, 1.0f);
+      glm::vec4 y_axis(0.0f, 1.0f, 0.0f, 1.0f);
+      glm::mat4 rotz = glm::rotate(this->model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+      y_axis = rotz * y_axis;
+      glm::mat4 roty = glm::rotate(this->model, glm::radians(rotation.y), glm::vec3(y_axis.x, y_axis.y, y_axis.z));
+      x_axis = roty * rotz * x_axis;
+      glm::mat4 rotx = glm::rotate(this->model, glm::radians(rotation.x), glm::vec3(x_axis.x, x_axis.y, x_axis.z));
+      rot = rotx * roty * rotz;
+    }
+    this->model = trans * rot * scale;
+    updateModel = false;
   }
 
-  if(this->customShader){
-    for(unsigned int i = 0; i < this->meshes.size();i++){
-      (this->meshes)[i].draw(this->model, &(this->prog));
-    }
-  }else{
-    for(unsigned int i = 0; i < this->meshes.size();i++){
-      (this->meshes)[i].draw(this->model, NULL);
-    }
+  for(unsigned int i = 0; i < this->meshes.size();i++){
+    (this->meshes)[i].draw(this->model, (this->prog) + this->activeShader);
   }
 }
 
-void Model::enableCustomShader(){
-  this->customShader = true;
-}
-
-void Model::disableCustomShader(){
-  this->customShader = false;
-}
-
-void Model::toggleCustomShader(){
-  this->customShader = !(this->customShader);
+void Model::setActiveShader(size_t num){
+  this->activeShader = num;
 }

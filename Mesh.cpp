@@ -1,5 +1,8 @@
 #include "Mesh.h"
 
+//Shader vsm(0, true, "vertexShaderSource.txt");
+//Shader fsm(2, true, "fragmentShaderSource.txt");
+
 Mesh::Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i){
   this->vertices = v;
   this->textures = t;
@@ -33,11 +36,7 @@ Mesh::~Mesh(){
   glDeleteBuffers(1, &(this->EBO));
 }
 
-void Mesh::draw(glm::mat4 model, ShaderProgram* prog){
-  ShaderProgram* shp = &(Mesh::entityShader);
-  if(prog!=NULL){
-    shp = prog;
-  }
+void Mesh::draw(glm::mat4 model, ShaderProgram* shp){
   shp->use();
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));

@@ -9,9 +9,12 @@ class Game{
 public:
   Game();
   ~Game();
+  void mainLoop();
+  unsigned int SCR_WIDTH;
+  unsigned int SCR_HEIGHT;
 private:
   GLFWwindow* window;
-  GameMap m;
+  GameMap* m;
 
 };
 

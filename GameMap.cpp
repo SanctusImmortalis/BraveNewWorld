@@ -2,7 +2,6 @@
 #include "GameMap.h"
 #include "ImageLoader.h"
 
-GameMap* currentMap = NULL;
 
 Brush::Brush(std::vector<Vertex> v, Texture diff, Texture spec, std::vector<GLuint> i, glm::vec3 pos, glm::vec3 rot, glm::vec3 scale){
   this->vertices = v;
@@ -88,16 +87,29 @@ Brush::~Brush(){
   glDeleteBuffers(1, &(this->EBO));
 }
 
-void Brush::draw(){
+void Brush::draw(ShaderProgram* shp){
   if(this->updateModel){
     this->model = glm::mat4(1.0f);
-    this->model = glm::scale(glm::rotate(glm::translate(this->model, this->position), glm::radians(180.0f), this->rotation), this->scalefactor);
+    glm::mat4 scale = glm::scale(this->model, this->scalefactor);
+    glm::mat4 rot;
+    glm::mat4 trans = glm::translate(this->model, this->position);
+    {
+      glm::vec4 x_axis(1.0f, 0.0f, 0.0f, 1.0f);
+      glm::vec4 y_axis(0.0f, 1.0f, 0.0f, 1.0f);
+      glm::mat4 rotz = glm::rotate(this->model, glm::radians(this->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+      y_axis = rotz * y_axis;
+      glm::mat4 roty = glm::rotate(this->model, glm::radians(this->rotation.y), glm::vec3(y_axis.x, y_axis.y, y_axis.z));
+      x_axis = roty * rotz * x_axis;
+      glm::mat4 rotx = glm::rotate(this->model, glm::radians(this->rotation.x), glm::vec3(x_axis.x, x_axis.y, x_axis.z));
+      rot = rotx * roty * rotz;
+    }
+    this->model = trans * rot * scale;
     this->updateModel = false;
   }
-  ShaderProgram* shp = &(Brush::brushShader);
+  glm::mat4 md = this->model;
   shp->use();
   GLint modelUniform = shp->getUniform("model");
-  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(this->model));
+  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(md));
 
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, (this->specular).texHnd);
