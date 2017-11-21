@@ -2,10 +2,22 @@
 
 //Brush brushes[1];
 
+Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+float ultX = SCR_WIDTH / 2.0;
+float ultY = SCR_HEIGHT / 2.0;
+bool firstMouse = true;
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+bool updateView = true, updateProj = true;
+
 void initMap(GameMap* m){
   glGenBuffers(1, &(m->matrices));
   glBindBuffer(GL_UNIFORM_BUFFER, m->matrices);
-  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);]
+  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
   glBindBufferRange(GL_UNIFORM_BUFFER, 0, m->matrices, 0, 2 * sizeof(glm::mat4));
   std::vector<Vertex> v;
@@ -29,17 +41,14 @@ void initMap(GameMap* m){
   i.push_back(3);
   i.push_back(2);
 
-  const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;layout (location = 1) in vec3 normals;layout (location = 2) in vec2 texCoords;out vec2 tc;uniform mat4 model;uniform mat4 view;uniform mat4 projection;\nvoid main(){gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);tc = vec2(texCoords.x, texCoords.y);}";
+  const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;layout (location = 1) in vec3 normals;layout (location = 2) in vec2 texCoords;out vec2 tc;uniform mat4 model;layout (std140) uniform Matrices{mat4 view; mat4 projection;};\nvoid main(){gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);tc = vec2(texCoords.x, texCoords.y);}";
   const char* fragmentShaderSource = "#version 330 core\nin vec2 tc;out vec4 FragColor;uniform sampler2D tex;\nvoid main(){FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);}";
-  glm::mat4 vm = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  glm::mat4 pm = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
     Shader vs(0, false, vertexShaderSource);
   Shader fs(2, false, fragmentShaderSource);
   ShaderProgram* brushShader = new ShaderProgram(&vs, NULL, &fs);
   brushShader->use();
 
-  glUniformMatrix4fv(brushShader->getUniform("view"), 1, GL_FALSE, glm::value_ptr(vm));
-  glUniformMatrix4fv(brushShader->getUniform("projection"), 1, GL_FALSE, glm::value_ptr(pm));
+  brushShader->setBlockIndex("Matrices", 0);
 
   m->shaders[0] = brushShader;
   m->shadernum = 1;
@@ -54,6 +63,16 @@ void initMap(GameMap* m){
 void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->InputTeclado(FRENTE, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->InputTeclado(TRAS, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera->InputTeclado(ESQUERDA, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera->InputTeclado(DIREITA, deltaTime);
+
+        updateView = true;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -61,18 +80,37 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+
+    updateProj = true;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+  if (firstMouse)
+  {
+      ultX = xpos;
+      ultY = ypos;
+      firstMouse = false;
+  }
+
+  float xoffset = xpos - ultX;
+  float yoffset = ultY - ypos; // reversed since y-coordinates go from bottom to top
+
+  ultX = xpos;
+  ultY = ypos;
+
+  camera->InputMouse(xoffset, yoffset);
+  updateView = true;
 }
 
 Game::Game(){
-  this->SCR_WIDTH = 800;
-  this->SCR_HEIGHT = 600;
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   // glfw window creation
   // --------------------
-  this->window = glfwCreateWindow(this->SCR_WIDTH, this->SCR_HEIGHT, "Brave New World", NULL, NULL);
+  this->window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Brave New World", NULL, NULL);
     if (this->window == NULL)
     {
         glfwTerminate();
@@ -80,6 +118,8 @@ Game::Game(){
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -99,6 +139,19 @@ Game::~Game(){
 
 void Game::mainLoop(){
   while(!glfwWindowShouldClose(this->window)){
+    float frameAtual = glfwGetTime();
+    deltaTime = frameAtual - lastFrame;
+    lastFrame = frameAtual;
+
+    if(updateView){
+      glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);
+      glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(camera->GetViewMatrix()));
+    }
+    if(updateProj){
+      glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);
+      glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(glm::perspective(glm::radians(45.0f), ((float)SCR_WIDTH)/((float)SCR_HEIGHT), 0.1f, 100.0f)));
+    }
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
     processInput(this->window);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

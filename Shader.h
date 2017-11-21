@@ -23,6 +23,7 @@ public:
   ~ShaderProgram();
   void use();
   GLint getUniform(const char* name);
+  void setBlockIndex(const char* name, GLuint index);
   GLint status();
 private:
   GLuint spHnd;

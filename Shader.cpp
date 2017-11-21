@@ -97,6 +97,10 @@ void ShaderProgram::use(){
   glUseProgram(this->spHnd);
 }
 
+void ShaderProgram::setBlockIndex(const char* name, GLuint index){
+  glUniformBlockBinding(this->spHnd, glGetUniformBlockIndex(this->spHnd, name), index);
+}
+
 GLint ShaderProgram::getUniform(const char* name){
   return glGetUniformLocation(this->spHnd, name);
 }
