@@ -1,7 +1,7 @@
 #include "Model.h"
 #include "ImageLoader.h"
 
-Model::Model(char* path, ShaderProgram* p){
+Model::Model(char* path, ShaderProgram** p){
   this->model = glm::mat4(1.0f);
   this->prog = p;
   Assimp::Importer importer;
@@ -138,7 +138,7 @@ void Model::draw(glm::vec3 position, glm::vec3 rotation, glm::vec3 scalefactor, 
   }
 
   for(unsigned int i = 0; i < this->meshes.size();i++){
-    (this->meshes)[i].draw(this->model, (this->prog) + this->activeShader);
+    (this->meshes)[i].draw(this->model, *((this->prog) + this->activeShader));
   }
 }
 

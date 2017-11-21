@@ -9,14 +9,14 @@
 
 class Model{
 public:
-  Model(char* path, ShaderProgram* p);
+  Model(char* path, ShaderProgram** p);
   void draw(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, bool updateModel);
   void setActiveShader(size_t num);
   AABB genBoundingBox();
 private:
   glm::mat4 model;
   size_t activeShader;
-  ShaderProgram* prog;
+  ShaderProgram** prog;
   std::vector<Mesh> meshes;
   std::string directory;
   void processNode(aiNode *node, const aiScene *scene);

@@ -33,11 +33,11 @@ public:
   GameMap(void (*func)(GameMap* m)) {func(this);}
   GLuint matrices, lights;
   Camera cam;
-  ShaderProgram* shaders;
+  ShaderProgram* shaders[2];
   int shadernum;
-  Entity* ents;
+  Entity* ents[5];
   int entnum;
-  Brush* brushes;
+  Brush* brushes[2];
   int brushnum;
 };
 
