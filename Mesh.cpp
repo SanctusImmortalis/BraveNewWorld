@@ -36,10 +36,8 @@ Mesh::~Mesh(){
   glDeleteBuffers(1, &(this->EBO));
 }
 
-void Mesh::draw(glm::mat4 model, ShaderProgram* shp){
+void Mesh::draw(ShaderProgram* shp){
   shp->use();
-  GLint modelUniform = shp->getUniform("model");
-  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
 
   {
     GLint texUniform = 0;

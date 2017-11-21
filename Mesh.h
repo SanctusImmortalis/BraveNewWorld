@@ -9,9 +9,9 @@ class Mesh {
 public:
   Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i);
   ~Mesh();
-  void draw(glm::mat4 model, ShaderProgram* prog);
+  void draw(ShaderProgram* prog);
   std::vector<glm::vec3> getVertices();
-  
+
   ShaderProgram prog;
 private:
   GLuint VAO, VBO, EBO;

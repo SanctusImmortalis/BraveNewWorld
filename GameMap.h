@@ -20,6 +20,7 @@ public:
 private:
   glm::vec3 position, rotation, scalefactor;
   glm::mat4 model;
+  glm::mat3 normalMat;
   //AABB bb;
   bool updateModel;
   GLuint VAO, VBO, EBO;
@@ -37,7 +38,7 @@ public:
   int shadernum;
   Entity* ents[5];
   int entnum;
-  Brush* brushes[2];
+  Brush* brushes[30];
   int brushnum;
 };
 

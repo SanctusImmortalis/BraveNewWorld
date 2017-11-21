@@ -12,7 +12,7 @@ enum Movimento_Cam{
 
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float VELOCIDADE = 2.5f;
+const float VELOCIDADE = 5.0f;
 const float SENSITIVIDADE = 0.1f;
 const float Zoom = 45.0f;
 

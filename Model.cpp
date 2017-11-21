@@ -3,6 +3,7 @@
 
 Model::Model(char* path, ShaderProgram** p){
   this->model = glm::mat4(1.0f);
+  this->normalMat = glm::mat3(1.0f);
   this->prog = p;
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes);
@@ -134,11 +135,19 @@ void Model::draw(glm::vec3 position, glm::vec3 rotation, glm::vec3 scalefactor, 
       rot = rotx * roty * rotz;
     }
     this->model = trans * rot * scale;
+    this->normalMat = glm::mat3(glm::transpose(glm::inverse(this->model)));
     updateModel = false;
   }
+  glm::mat4 md = this->model;
+  glm::mat3 nm = this->normalMat;
+  ShaderProgram* shp = *((this->prog) + this->activeShader);
+  GLint modelUniform = shp->getUniform("model");
+  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(md));
+  modelUniform = shp->getUniform("normalMat");
+  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(nm));
 
   for(unsigned int i = 0; i < this->meshes.size();i++){
-    (this->meshes)[i].draw(this->model, *((this->prog) + this->activeShader));
+    (this->meshes)[i].draw(shp);
   }
 }
 

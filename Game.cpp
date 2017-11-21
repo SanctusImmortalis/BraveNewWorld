@@ -7,25 +7,31 @@ const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 1) in vec3 aNormals;\n"
 "layout (location = 2) in vec2 aTexCoords;\n"
 "uniform mat4 model;\n"
+"uniform mat3 normalMat;\n"
 "layout (std140) uniform Matrices{"
 "mat4 view;\n"
 "mat4 projection;\n"
 "};\n"
 "out vec2 tc;\n"
-"out vec3 norm;\n"
+//"out vec3 norm;\n"
+//"out vec3 worldCoords;\n"
 "void main(){\n"
+//"worldCoords = model * vec4(aPos, 1.0f);\n"
 "gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
-"norm = mat3(transpose(inverse(model))) * aNormals;\n"
+//"norm = normalMat * aNormals;\n"
 "tc = aTexCoords;\n}\0";
 
 const char* fragmentShaderSource = "#version 330 core\n"
 "in vec2 tc;\n"
+//"in vec3 norm;\n"
+//"in vec3 worldCoords;\n"
 "out vec4 FragColor;\n"
-"uniform sampler2D tex;\n"
+"uniform sampler2D diff;\n"
+"uniform sampler2D spec;\n"
 "void main(){\n"
-"FragColor = texture(tex, tc);\n}\0";
+"FragColor = texture(diff, tc);\n}\0";
 
-Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 7.0f));
+Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 1.0f));
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 float ultX = SCR_WIDTH / 2.0;
@@ -52,7 +58,7 @@ void initMap(GameMap* m){
   glBindTexture(GL_TEXTURE_2D, td.texHnd);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -62,29 +68,29 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
     freeImg(img);
 
   Vertex vt;
-  vt.position = glm::vec3(-5.0f, -5.0f, 0.0f);
+  vt.position = glm::vec3(-5.0f, -5.0f, 0.5f);
   vt.texCoords = glm::vec2(0.0f, 0.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(5.0f, -5.0f, 0.0f);
+  vt.position = glm::vec3(5.0f, -5.0f, 0.5f);
   vt.texCoords = glm::vec2(5.0f, 0.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(-5.0f, 5.0f, 0.0f);
+  vt.position = glm::vec3(-5.0f, 5.0f, 0.5f);
   vt.texCoords = glm::vec2(0.0f, 5.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(5.0f, 5.0f, 0.0f);
+  vt.position = glm::vec3(5.0f, 5.0f, 0.5f);
   vt.texCoords = glm::vec2(5.0f, 5.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(5.0f, 5.0f, -1.0f);
-  vt.texCoords = glm::vec2(5.0f, 6.0f);
+  vt.position = glm::vec3(5.0f, 5.0f, -0.5f);
+  vt.texCoords = glm::vec2(0.0f, 5.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(5.0f, -5.0f, -1.0f);
-  vt.texCoords = glm::vec2(5.0f, 1.0f);
+  vt.position = glm::vec3(5.0f, -5.0f, -0.5f);
+  vt.texCoords = glm::vec2(0.0f, 0.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(-5.0f, -5.0f, -1.0f);
-  vt.texCoords = glm::vec2(5.0f, 1.0f);
+  vt.position = glm::vec3(-5.0f, -5.0f, -0.5f);
+  vt.texCoords = glm::vec2(5.0f, 0.0f);
   v.push_back(vt);
-  vt.position = glm::vec3(-5.0f, 5.0f, -1.0f);
-  vt.texCoords = glm::vec2(5.0f, 6.0f);
+  vt.position = glm::vec3(-5.0f, 5.0f, -0.5f);
+  vt.texCoords = glm::vec2(5.0f, 5.0f);
   v.push_back(vt);
 
 
@@ -128,12 +134,12 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   i.push_back(3);
   i.push_back(4);
 
-  i.push_back(0);
   i.push_back(1);
+  i.push_back(0);
   i.push_back(6);
 
-  i.push_back(6);
   i.push_back(1);
+  i.push_back(6);
   i.push_back(5);
 
   //const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;layout (location = 1) in vec3 normals;layout (location = 2) in vec2 texCoords;out vec2 tc;uniform mat4 model;layout (std140) uniform Matrices{mat4 view; mat4 projection;};\nvoid main(){gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);tc = vec2(texCoords.x, texCoords.y);}";
@@ -150,9 +156,14 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   m->entnum = 0;
 
   //Brush* obj = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushes[0] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->brushes[0] = new Brush(v, td, ts, i, glm::vec3(0.0f, -5.5f, 0.0f), glm::vec3(90.0f, 00.0f, 0.0f), glm::vec3(5.5f, 5.5f, 1.0f));
+  m->brushes[1] = new Brush(v, td, ts, i, glm::vec3(0.0f, 5.5f, 0.0f), glm::vec3(90.0f, 00.0f, 0.0f), glm::vec3(5.5f, 5.5f, 1.0f));
+  m->brushes[2] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 28.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+  m->brushes[3] = new Brush(v, td, ts, i, glm::vec3(-15.5f, 0.0f, 17.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  m->brushes[4] = new Brush(v, td, ts, i, glm::vec3(15.5f, 0.0f, 17.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+
   //m->brushes[1] = new Brush(v, td, ts, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushnum = 1;
+  m->brushnum = 5;
 }
 
 void processInput(GLFWwindow *window){

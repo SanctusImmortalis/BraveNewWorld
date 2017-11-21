@@ -12,6 +12,7 @@ Brush::Brush(std::vector<Vertex> v, Texture diff, Texture spec, std::vector<GLui
   this->rotation = rot;
   this->scalefactor = scale;
   this->model = glm::mat4(1.0f);
+  this->normalMat = glm::mat3(1.0f);
   this->updateModel = true;
 
   glGenVertexArrays(1, &(this->VAO));
@@ -104,12 +105,20 @@ void Brush::draw(ShaderProgram* shp){
       rot = rotx * roty * rotz;
     }
     this->model = trans * rot * scale;
+    this->normalMat = glm::mat3(glm::transpose(glm::inverse(this->model)));
     this->updateModel = false;
   }
   glm::mat4 md = this->model;
+  glm::mat3 nm = this->normalMat;
   shp->use();
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(md));
+  modelUniform = shp->getUniform("normalMat");
+  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(nm));
+  modelUniform = shp->getUniform("diff");
+  glUniform1i(modelUniform, 0);
+  modelUniform = shp->getUniform("spec");
+  glUniform1i(modelUniform, 1);
 
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, (this->specular).texHnd);

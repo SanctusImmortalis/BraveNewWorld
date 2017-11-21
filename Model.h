@@ -15,6 +15,7 @@ public:
   AABB genBoundingBox();
 private:
   glm::mat4 model;
+  glm::mat3 normalMat;
   size_t activeShader;
   ShaderProgram** prog;
   std::vector<Mesh> meshes;
