@@ -38,7 +38,7 @@ public:
   int shadernum;
   Entity* ents[5];
   int entnum;
-  Brush* brushes[30];
+  Brush* brushes[31];
   int brushnum;
 };
 

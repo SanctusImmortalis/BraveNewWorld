@@ -2,7 +2,7 @@
 
 //Brush brushes[1];
 
-const char* vertexShaderSource = "#version 330 core\n"
+const char* bvertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec3 aNormals;\n"
 "layout (location = 2) in vec2 aTexCoords;\n"
@@ -21,7 +21,7 @@ const char* vertexShaderSource = "#version 330 core\n"
 "norm = normalMat * aNormals;\n"
 "tc = aTexCoords;\n}\0";
 
-const char* fragmentShaderSource = "#version 330 core\n"
+const char* bfragmentShaderSource = "#version 330 core\n"
 "in vec2 tc;\n"
 "in vec3 norm;\n"
 "in vec3 FragPos;\n"
@@ -42,12 +42,12 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "float distance3    = length(light3 - FragPos);"
 "float distance4    = length(light4 - FragPos);"
 "float distance5    = length(light5 - FragPos);"
-"float attenuation1 = 1.0 / (1.0 + 0.07 * distance1 + 0.017 * (distance1 * distance1));"
-"float attenuation2 = 1.0 / (1.0 + 0.07 * distance2 + 0.017 * (distance2 * distance2));"
-"float attenuation3 = 1.0 / (1.0 + 0.07 * distance3 + 0.017 * (distance3 * distance3));"
-"float attenuation4 = 1.0 / (1.0 + 0.07 * distance4 + 0.017 * (distance4 * distance4));"
-"float attenuation5 = 1.0 / (1.0 + 0.07 * distance5 + 0.017 * (distance5 * distance5));"
-"vec3 ambient = vec3(samples[0]) * 0.1;\n"
+"float attenuation1 = 1.0 / (1.0 + 0.022 * distance1 + 0.0019 * (distance1 * distance1));"
+"float attenuation2 = 1.0 / (1.0 + 0.022 * distance2 + 0.0019 * (distance2 * distance2));"
+"float attenuation3 = 1.0 / (1.0 + 0.022 * distance3 + 0.0019 * (distance3 * distance3));"
+"float attenuation4 = 1.0 / (1.0 + 0.022 * distance4 + 0.0019 * (distance4 * distance4));"
+"float attenuation5 = 1.0 / (1.0 + 0.022 * distance5 + 0.0019 * (distance5 * distance5));"
+"vec3 ambient = vec3(samples[0]) * 0.01;\n"
 
 "vec3 light1Dir = normalize(light1 - FragPos);\n"
 "vec3 light2Dir = normalize(light2 - FragPos);\n"
@@ -60,10 +60,64 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "vec3 reflect3Dir = reflect(-light3Dir, normie);\n"
 "vec3 reflect4Dir = reflect(-light4Dir, normie);\n"
 "vec3 reflect5Dir = reflect(-light5Dir, normie);\n"
-"vec3 diffuseLight = (max(dot(normie, light1Dir), 0.0) + attenuation1) * vec3(samples[0]) + (max(dot(normie, light2Dir), 0.0) + attenuation2) * vec3(samples[0]) + (max(dot(normie, light3Dir), 0.0) + attenuation3) * vec3(samples[0]) + (max(dot(normie, light4Dir), 0.0) + attenuation4) * vec3(samples[0]) + (max(dot(normie, light5Dir), 0.0) + attenuation5) * vec3(samples[0]);\n"
-"vec3 specularLight = (pow(max(dot(viewDir, reflect1Dir), 0.0), 32) + attenuation1) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect2Dir), 0.0), 32) + attenuation2) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect3Dir), 0.0), 32) + attenuation3) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect4Dir), 0.0), 32) + attenuation4) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect5Dir), 0.0), 32) + attenuation5) * vec3(samples[1]);"
+"vec3 diffuseLight = (max(dot(normie, light1Dir), 0.0) * attenuation1) * vec3(samples[0]) + (max(dot(normie, light2Dir), 0.0) * attenuation2) * vec3(samples[0]) + (max(dot(normie, light3Dir), 0.0) * attenuation3) * vec3(samples[0]) + (max(dot(normie, light4Dir), 0.0) * attenuation4) * vec3(samples[0]) + (max(dot(normie, light5Dir), 0.0) * attenuation5) * vec3(samples[0]);\n"
+"vec3 specularLight = (pow(max(dot(viewDir, reflect1Dir), 0.0), 64) * attenuation1) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect2Dir), 0.0), 64) * attenuation2) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect3Dir), 0.0), 64) * attenuation3) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect4Dir), 0.0), 64) * attenuation4) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect5Dir), 0.0), 64) * attenuation5) * vec3(samples[1]);"
 
-"FragColor = vec4(ambient + diffuseLight + specularLight*0.5, 1.0);\n}\0";
+"FragColor = vec4(ambient + diffuseLight*0.7 + specularLight*0.5, 1.0);\n}\0";
+
+const char* efragmentShaderSource = "#version 330 core\n"
+"in vec2 tc;\n"
+"in vec3 norm;\n"
+"in vec3 FragPos;\n"
+"out vec4 FragColor;\n"
+//"struct Material{sampler2D diffuse[16];\nsampler2D specular[16];};\n"
+//"uniform Material material;\n"
+//"uniform int nrDiff;\nuniform int nrSpec;\n"
+"layout (std140) uniform Lights{\n"
+"vec3 light1;\nvec3 light2;\nvec3 light3;\nvec3 light4;\nvec3 light5;\n"
+"vec3 viewPos;\n"
+"};\n"
+"vec4 samples[2];\n"
+"void main(){\n"
+/*
+"vec3 normie = normalize(norm);\n"
+
+"float distance1    = length(light1 - FragPos);"
+"float distance2    = length(light2 - FragPos);"
+"float distance3    = length(light3 - FragPos);"
+"float distance4    = length(light4 - FragPos);"
+"float distance5    = length(light5 - FragPos);"
+"float attenuation1 = 1.0 / (1.0 + 1.5 * distance1 + 2.7 * (distance1 * distance1));"
+"float attenuation2 = 1.0 / (1.0 + 1.5 * distance2 + 2.7 * (distance2 * distance2));"
+"float attenuation3 = 1.0 / (1.0 + 1.5 * distance3 + 2.7 * (distance3 * distance3));"
+"float attenuation4 = 1.0 / (1.0 + 1.5 * distance4 + 2.7 * (distance4 * distance4));"
+"float attenuation5 = 1.0 / (1.0 + 1.5 * distance5 + 2.7 * (distance5 * distance5));"
+"vec3 ambient = vec3(samples[0]) * 0.1;\n"
+"float alpha = 0.0;\n"
+"vec3 light1Dir = normalize(light1 - FragPos);\n"
+"vec3 light2Dir = normalize(light2 - FragPos);\n"
+"vec3 light3Dir = normalize(light3 - FragPos);\n"
+"vec3 light4Dir = normalize(light4 - FragPos);\n"
+"vec3 light5Dir = normalize(light5 - FragPos);\n"
+"vec3 viewDir = normalize(viewPos - FragPos);\n"
+"vec3 reflect1Dir = reflect(-light1Dir, normie);\n"
+"vec3 reflect2Dir = reflect(-light2Dir, normie);\n"
+"vec3 reflect3Dir = reflect(-light3Dir, normie);\n"
+"vec3 reflect4Dir = reflect(-light4Dir, normie);\n"
+"vec3 reflect5Dir = reflect(-light5Dir, normie);\n"
+"vec3 diffuseLight = vec3(0.0, 0.0, 0.0);\n"
+"vec3 specularLight = vec3(0.0, 0.0, 0.0);\n"
+"for(int i=0;i<nrDiff;i++){"
+"samples[0] = texture(material.diffuse[i], tc);"
+//"alpha += samples[0].w;\n"
+"diffuseLight += (max(dot(normie, light1Dir), 0.0) * attenuation1) * vec3(samples[0]) + (max(dot(normie, light2Dir), 0.0) * attenuation2) * vec3(samples[0]) + (max(dot(normie, light3Dir), 0.0) * attenuation3) * vec3(samples[0]) + (max(dot(normie, light4Dir), 0.0) * attenuation4) * vec3(samples[0]) + (max(dot(normie, light5Dir), 0.0) * attenuation5) * vec3(samples[0]);\n"
+"}\n"
+"for(int i=0;i<nrSpec;i++){"
+"samples[1] = texture(material.specular[i], tc);"
+"specularLight += (pow(max(dot(viewDir, reflect1Dir), 0.0), 64) * attenuation1) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect2Dir), 0.0), 64) * attenuation2) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect3Dir), 0.0), 64) * attenuation3) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect4Dir), 0.0), 64) * attenuation4) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect5Dir), 0.0), 64) * attenuation5) * vec3(samples[1]);"
+"}\n"
+*/
+"FragColor = vec4(0.7, 0.0, 0.5, 1.0);\n}\0";
 
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
 const unsigned int SCR_WIDTH = 800;
@@ -85,11 +139,11 @@ void initMap(GameMap* m){
   glBindBufferRange(GL_UNIFORM_BUFFER, 0, m->matrices, 0, 2 * sizeof(glm::mat4));
 
   glm::vec3 lightPositions[5];
-  lightPositions[0] = glm::vec3(0.0f, 4.8f, 0.0f);
-  lightPositions[1] = glm::vec3(0.0f, 4.8f, 27.5f);
-  lightPositions[2] = glm::vec3(0.0f, 4.8f, -27.5f);
-  lightPositions[3] = glm::vec3(27.5f, 4.8f, 0.0f);
-  lightPositions[4] = glm::vec3(-27.5f, 4.8f, 0.0f);
+  lightPositions[0] = glm::vec3(0.0f, 3.5f, 0.0f);
+  lightPositions[1] = glm::vec3(0.0f, 3.5f, 27.5f);
+  lightPositions[2] = glm::vec3(0.0f, 3.5f, -27.5f);
+  lightPositions[3] = glm::vec3(27.5f, 3.5f, 0.0f);
+  lightPositions[4] = glm::vec3(-27.5f, 3.5f, 0.0f);
   glGenBuffers(1, &(m->lights));
   glBindBuffer(GL_UNIFORM_BUFFER, m->lights);
   glBufferData(GL_UNIFORM_BUFFER, 96, NULL, GL_STATIC_DRAW);
@@ -341,16 +395,29 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
 
   //const char* vertexShaderSource = "#version 330 core\nlayout (location = 0) in vec3 aPos;layout (location = 1) in vec3 normals;layout (location = 2) in vec2 texCoords;out vec2 tc;uniform mat4 model;layout (stdw140) uniform Matrices{mat4 view; mat4 projection;};\nvoid main(){gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);tc = vec2(texCoords.x, texCoords.y);}";
   //const char* fragmentswhaderSource = "#version 330 core\nin vec2 tc;out vec4 FragColor;uniform sampler2D tex;\nvoid main(){FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);}";
-    Shader vs(0, false, vertexShaderSource);
-  Shader fs(2, false, fragmentShaderSource);
-  ShaderProgram* brushShader = new ShaderProgram(&vs, NULL, &fs);
+    Shader bvs(0, false, bvertexShaderSource);
+  Shader bfs(2, false, bfragmentShaderSource);
+  Shader efs(2, false, efragmentShaderSource);
+  ShaderProgram* brushShader = new ShaderProgram(&bvs, NULL, &bfs);
+  ShaderProgram* entityShader = new ShaderProgram(&bvs, NULL, &efs);
   brushShader->use();
 
   brushShader->setBlockIndex("Matrices", 0);
   brushShader->setBlockIndex("Lights", 1);
 
   m->shaders[0] = brushShader;
-  m->shadernum = 1;
+  m->shaders[1] = entityShader;
+  m->shadernum = 2;
+
+  Model* car = new Model("wt_teapot.obj", m->shaders + 1);
+  std::vector<Vertex> v2;
+  std::vector<GLuint> i2;
+  for(int j=0;j<(car->meshes.size());j++){
+    v2.insert(v2.end(), car->meshes[j]->vertices.begin(), car->meshes[j]->vertices.end());
+    i2.insert(i2.end(), car->meshes[j]->indices.begin(), car->meshes[j]->indices.end());
+  }
+  m->brushes[30] = new Brush(v2, tsf, tsf, i2, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.7f, 0.7f, 0.7f));
+
   m->entnum = 0;
 
   //Brush* obj = new Brush(v, tdw, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
@@ -392,7 +459,7 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   m->brushes[29] = new Brush(v, tdw, tsw, i, glm::vec3(-12.0f, 0.0f, 8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
 
   //m->brushes[1] = new Brush(v, td, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushnum = 30;
+  m->brushnum = 31;
 }
 
 void processInput(GLFWwindow *window){
@@ -464,8 +531,8 @@ Game::Game(){
     }
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
+    //glEnable(GL_CULL_FACE);
+    //glFrontFace(GL_CCW);
 
     this->m = new GameMap(initMap);
 }

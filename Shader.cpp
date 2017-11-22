@@ -63,7 +63,10 @@ ShaderProgram::ShaderProgram(Shader* vs, Shader* gs, Shader* fs){
     if((vs->status()!=GL_FALSE)&&(vs->getType()==0)){
       vs->attach(this->spHnd);
     }else{
+      char infoLog[512];
+      vs->getInfoLog(infoLog);
       std::cerr << "Vertex shader invalid" << std::endl;
+      std::cerr << infoLog << std::endl;
     }
   }else{
     std::cerr << "No vertex shader" << std::endl;
@@ -72,14 +75,20 @@ ShaderProgram::ShaderProgram(Shader* vs, Shader* gs, Shader* fs){
     if((gs->status()!=GL_FALSE)&&(gs->getType()==1)){
       gs->attach(this->spHnd);
     }else{
+      char infoLog[512];
+      gs->getInfoLog(infoLog);
       std::cerr << "Geometry shader invalid" << std::endl;
+      std::cerr << infoLog << std::endl;
     }
   }
   if(fs!=NULL){
     if((fs->status()!=GL_FALSE)&&(fs->getType()==2)){
       fs->attach(this->spHnd);
     }else{
+      char infoLog[512];
+      fs->getInfoLog(infoLog);
       std::cerr << "Fragment shader invalid" << std::endl;
+      std::cerr << infoLog << std::endl;
     }
   }else{
     std::cerr << "No fragment shader" << std::endl;

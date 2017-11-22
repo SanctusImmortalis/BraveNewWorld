@@ -9,11 +9,11 @@ class Mesh {
 public:
   Mesh(std::vector<Vertex> v, std::vector<Texture> t, std::vector<GLuint> i);
   ~Mesh();
-  void draw(ShaderProgram* prog);
+  void draw(ShaderProgram* shp);
   std::vector<glm::vec3> getVertices();
 
-  ShaderProgram prog;
-private:
+  //ShaderProgram prog;
+
   GLuint VAO, VBO, EBO;
   std::vector<Vertex> vertices;
   std::vector<Texture> textures;

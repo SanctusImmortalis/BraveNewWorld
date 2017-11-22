@@ -1,10 +1,11 @@
 #include "Model.h"
 #include "ImageLoader.h"
 
-Model::Model(char* path, ShaderProgram** p){
+Model::Model(const char* path, ShaderProgram** p){
   this->model = glm::mat4(1.0f);
   this->normalMat = glm::mat3(1.0f);
   this->prog = p;
+  this->activeShader = 0;
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes);
   if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode){
@@ -57,7 +58,7 @@ GLuint loadTexture(const char* path, std::string dir){
   return id;
 }
 
-Mesh Model::loadMesh(aiMesh *mesh, const aiScene *scene){
+Mesh* Model::loadMesh(aiMesh *mesh, const aiScene *scene){
   std::vector<Vertex> vertices;
   std::vector<Texture> textures;
   std::vector<unsigned int> indices;
@@ -113,7 +114,7 @@ Mesh Model::loadMesh(aiMesh *mesh, const aiScene *scene){
       }
     }
   }
-  return Mesh(vertices, textures, indices);
+  return new Mesh(vertices, textures, indices);
 }
 
 
@@ -136,7 +137,7 @@ void Model::draw(glm::vec3 position, glm::vec3 rotation, glm::vec3 scalefactor, 
     }
     this->model = trans * rot * scale;
     this->normalMat = glm::mat3(glm::transpose(glm::inverse(this->model)));
-    updateModel = false;
+    //updateModel = false;
   }
   glm::mat4 md = this->model;
   glm::mat3 nm = this->normalMat;
@@ -144,10 +145,10 @@ void Model::draw(glm::vec3 position, glm::vec3 rotation, glm::vec3 scalefactor, 
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(md));
   modelUniform = shp->getUniform("normalMat");
-  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(nm));
+  glUniformMatrix3fv(modelUniform, 1, GL_FALSE, glm::value_ptr(nm));
 
   for(unsigned int i = 0; i < this->meshes.size();i++){
-    (this->meshes)[i].draw(shp);
+    (this->meshes)[i]->draw(shp);
   }
 }
 

@@ -114,7 +114,7 @@ void Brush::draw(ShaderProgram* shp){
   GLint modelUniform = shp->getUniform("model");
   glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(md));
   modelUniform = shp->getUniform("normalMat");
-  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(nm));
+  glUniformMatrix3fv(modelUniform, 1, GL_FALSE, glm::value_ptr(nm));
   modelUniform = shp->getUniform("diff");
   glUniform1i(modelUniform, 0);
   modelUniform = shp->getUniform("spec");

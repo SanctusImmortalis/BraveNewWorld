@@ -9,6 +9,7 @@ public:
   ~Shader();
   void attach(GLuint shprog);
   char getType();
+  void getInfoLog(char* buf) {glGetShaderInfoLog(this->shHnd, 512, NULL, buf);}
   GLint status();
 private:
   GLuint shHnd;

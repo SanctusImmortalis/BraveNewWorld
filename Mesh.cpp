@@ -49,11 +49,11 @@ void Mesh::draw(ShaderProgram* shp){
       if((this->textures)[i].isDiffuse){
         nrDiff += 1;
         ss << nrDiff;
-        texUniform = shp->getUniform(("material.diffuse" + ss.str()).c_str());
+        texUniform = shp->getUniform(("material.diffuse[" + ss.str() + ']').c_str());
       }else{
         nrSpec += 1;
         ss << nrSpec;
-        texUniform = shp->getUniform(("material.specular" + ss.str()).c_str());
+        texUniform = shp->getUniform(("material.specular[" + ss.str() + ']').c_str());
       }
       if(texUniform<0) break;
       glUniform1i(texUniform, i);
