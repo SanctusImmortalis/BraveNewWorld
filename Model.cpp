@@ -7,7 +7,7 @@ Model::Model(const char* path, ShaderProgram** p){
   this->prog = p;
   this->activeShader = 0;
   Assimp::Importer importer;
-  const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes);
+  const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_GenNormals);
   if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode){
     std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
   }
@@ -73,10 +73,14 @@ Mesh* Model::loadMesh(aiMesh *mesh, const aiScene *scene){
     p.y = mesh->mVertices[i].y;
     p.z = mesh->mVertices[i].z;
     v.position = p;
-    n.x = mesh->mNormals[i].x;
-    n.y = mesh->mNormals[i].y;
-    n.z = mesh->mNormals[i].z;
-    v.normal = n;
+    if(mesh->mNormals){
+      n.x = mesh->mNormals[i].x;
+      n.y = mesh->mNormals[i].y;
+      n.z = mesh->mNormals[i].z;
+      v.normal = n;
+    }else{
+      v.normal = glm::vec3(0.0f, 0.0f, 0.0f);
+    }
     if(mesh->mTextureCoords[0]){
       tc.x = mesh->mTextureCoords[0][i].x;
       tc.y = mesh->mTextureCoords[0][i].y;

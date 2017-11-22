@@ -65,6 +65,34 @@ const char* bfragmentShaderSource = "#version 330 core\n"
 
 "FragColor = vec4(ambient + diffuseLight*0.7 + specularLight*0.5, 1.0);\n}\0";
 
+const char* geometryShaderSource = "#version 330 core\n"
+"layout (triangles) in;\n"
+"layout (line_strip, max_vertices = 2) out;\n"
+"in vec3 norm[];\n"
+"void main() {"
+    "gl_Position = gl_in[0].gl_Position;"
+    "EmitVertex();"
+    "gl_Position = gl_in[0].gl_Position + vec4( normalize(norm[0]), 0.0) * 0.15;"
+    "EmitVertex();"
+    "EndPrimitive();"
+    "gl_Position = gl_in[1].gl_Position;"
+    "EmitVertex();"
+    "gl_Position = gl_in[1].gl_Position + vec4( normalize(norm[1]), 0.0) * 0.15;"
+    "EmitVertex();"
+    "EndPrimitive();"
+    "gl_Position = gl_in[2].gl_Position;"
+    "EmitVertex();"
+    "gl_Position = gl_in[2].gl_Position + vec4( normalize(norm[2]), 0.0) * 0.15;"
+    "EmitVertex();"
+    "EndPrimitive();"
+"}";
+
+const char* fSS = "#version 330 core\n"
+"out vec4 FragColor;"
+"void main(){"
+    "FragColor = vec4(0.6, 0.6, 0.6, 1.0);"
+"}";
+/*
 const char* efragmentShaderSource = "#version 330 core\n"
 "in vec2 tc;\n"
 "in vec3 norm;\n"
@@ -79,7 +107,6 @@ const char* efragmentShaderSource = "#version 330 core\n"
 "};\n"
 "vec4 samples[2];\n"
 "void main(){\n"
-/*
 "vec3 normie = normalize(norm);\n"
 
 "float distance1    = length(light1 - FragPos);"
@@ -116,8 +143,8 @@ const char* efragmentShaderSource = "#version 330 core\n"
 "samples[1] = texture(material.specular[i], tc);"
 "specularLight += (pow(max(dot(viewDir, reflect1Dir), 0.0), 64) * attenuation1) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect2Dir), 0.0), 64) * attenuation2) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect3Dir), 0.0), 64) * attenuation3) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect4Dir), 0.0), 64) * attenuation4) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect5Dir), 0.0), 64) * attenuation5) * vec3(samples[1]);"
 "}\n"
-*/
 "FragColor = vec4(0.7, 0.0, 0.5, 1.0);\n}\0";
+*/
 
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
 const unsigned int SCR_WIDTH = 800;
@@ -160,10 +187,17 @@ void initMap(GameMap* m){
   std::vector<Vertex> v;
   std::vector<GLuint> i;
   Texture tdw, tsw, tdf, tsf;
+  Texture ttd1, tts1, ttd2, tts2, ttd3, tts3;
   int w, h, c;
   unsigned char* img = loadImg("wall.png", &w, &h, &c);
   unsigned char img1[] = {30, 30, 30, 255};
   unsigned char img2[] = {240, 240, 240, 255};
+  unsigned char td1[] = {160, 160, 0, 255};
+  unsigned char ts1[] = {239, 239, 117, 255};
+  unsigned char td2[] = {24, 130, 82, 255};
+  unsigned char ts2[] = {255, 255, 255, 255};
+  unsigned char td3[] = {94, 94, 94, 255};
+  unsigned char ts3[] = {10, 10, 10, 255};
   glGenTextures(1, &(tdw.texHnd));
   glBindTexture(GL_TEXTURE_2D, tdw.texHnd);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -206,6 +240,60 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, img2);
         glGenerateMipmap(GL_TEXTURE_2D);
+
+        glGenTextures(1, &(ttd1.texHnd));
+        glBindTexture(GL_TEXTURE_2D, ttd1.texHnd);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td1);
+          glGenerateMipmap(GL_TEXTURE_2D);
+
+          glGenTextures(1, &(tts1.texHnd));
+          glBindTexture(GL_TEXTURE_2D, tts1.texHnd);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, ts1);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            glGenTextures(1, &(ttd2.texHnd));
+            glBindTexture(GL_TEXTURE_2D, ttd2.texHnd);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td2);
+              glGenerateMipmap(GL_TEXTURE_2D);
+
+              glGenTextures(1, &(tts2.texHnd));
+              glBindTexture(GL_TEXTURE_2D, tts2.texHnd);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, ts2);
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+                glGenTextures(1, &(ttd3.texHnd));
+                glBindTexture(GL_TEXTURE_2D, ttd3.texHnd);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td3);
+                  glGenerateMipmap(GL_TEXTURE_2D);
+
+                  glGenTextures(1, &(tts3.texHnd));
+                  glBindTexture(GL_TEXTURE_2D, tts3.texHnd);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, ts3);
+                    glGenerateMipmap(GL_TEXTURE_2D);
 
 
 
@@ -397,28 +485,44 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   //const char* fragmentswhaderSource = "#version 330 core\nin vec2 tc;out vec4 FragColor;uniform sampler2D tex;\nvoid main(){FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);}";
     Shader bvs(0, false, bvertexShaderSource);
   Shader bfs(2, false, bfragmentShaderSource);
-  Shader efs(2, false, efragmentShaderSource);
+  Shader gs(1, false, geometryShaderSource);
+  Shader fs(2, false, fSS);
+  //Shader efs(2, false, efragmentShaderSource);
   ShaderProgram* brushShader = new ShaderProgram(&bvs, NULL, &bfs);
-  ShaderProgram* entityShader = new ShaderProgram(&bvs, NULL, &efs);
+  ShaderProgram* bunnyShader = new ShaderProgram(&bvs, &gs, &fs);
+  //ShaderProgram* entityShader = new ShaderProgram(&bvs, NULL, &efs);
   brushShader->use();
 
   brushShader->setBlockIndex("Matrices", 0);
   brushShader->setBlockIndex("Lights", 1);
 
   m->shaders[0] = brushShader;
-  m->shaders[1] = entityShader;
+  m->shaders[1] = bunnyShader;
+  //m->shaders[1] = entityShader;
   m->shadernum = 2;
 
-  Model* car = new Model("wt_teapot.obj", m->shaders + 1);
+  Model* tp1 = new Model("wt_teapot.obj", NULL);
+  Model* tp2 = new Model("bunny.obj", NULL);
+  /*
   std::vector<Vertex> v2;
   std::vector<GLuint> i2;
   for(int j=0;j<(car->meshes.size());j++){
     v2.insert(v2.end(), car->meshes[j]->vertices.begin(), car->meshes[j]->vertices.end());
     i2.insert(i2.end(), car->meshes[j]->indices.begin(), car->meshes[j]->indices.end());
   }
-  m->brushes[30] = new Brush(v2, tsf, tsf, i2, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.7f, 0.7f, 0.7f));
+  */
+  m->ents[0] = new Entity(tp1, m->shaders, ttd1, tts1, glm::vec3(27.5f, -2.0f, 0.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.7f, 1.7f, 1.7f));
 
-  m->entnum = 0;
+  m->ents[1] = new Entity(tp1, m->shaders, ttd2, tts2, glm::vec3(27.5f, -2.0f, 5.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.7f, 1.7f, 1.7f));
+
+  m->ents[2] = new Entity(tp1, m->shaders, ttd3, tts3, glm::vec3(27.5f, -2.0f, -5.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.7f, 1.7f, 1.7f));
+
+  m->ents[3] = new Entity(tp2, m->shaders, ttd3, tts3, glm::vec3(0.0f, -2.0f, -27.5f), glm::vec3(0.0f, 90.0f, 0.0f), glm::vec3(7.0f, 7.0f, 7.0f));
+
+  m->ents[3]->setShaders(0, 1, 0);
+  m->ents[3]->setActiveShaders(2);
+
+  m->entnum = 4;
 
   //Brush* obj = new Brush(v, tdw, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
   m->brushes[0] = new Brush(v, tdf, tsf, i, glm::vec3(0.0f, -5.5f, 0.0f), glm::vec3(90.0f, 00.0f, 0.0f), glm::vec3(7.5f, 7.5f, 1.0f));
@@ -459,7 +563,7 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   m->brushes[29] = new Brush(v, tdw, tsw, i, glm::vec3(-12.0f, 0.0f, 8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
 
   //m->brushes[1] = new Brush(v, td, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushnum = 31;
+  m->brushnum = 30;
 }
 
 void processInput(GLFWwindow *window){
