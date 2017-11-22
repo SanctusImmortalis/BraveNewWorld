@@ -30,34 +30,39 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "uniform sampler2D spec;\n"
 "layout (std140) uniform Lights{\n"
 "vec3 light1;\nvec3 light2;\nvec3 light3;\nvec3 light4;\nvec3 light5;\n"
+"vec3 viewPos;\n"
 "};\n"
 "vec4 samples[2];\n"
 "void main(){\n"
 "samples[0] = texture(diff, tc);\nsamples[1] = texture(spec, tc);\n"
+"vec3 normie = normalize(norm);\n"
+
 "float distance1    = length(light1 - FragPos);"
 "float distance2    = length(light2 - FragPos);"
 "float distance3    = length(light3 - FragPos);"
 "float distance4    = length(light4 - FragPos);"
 "float distance5    = length(light5 - FragPos);"
-"float attenuation1 = 1.0 / (1.0 + 0.35 * distance1 + 0.44 * (distance1 * distance1));"
-"float attenuation2 = 1.0 / (1.0 + 0.35 * distance2 + 0.44 * (distance2 * distance2));"
-"float attenuation3 = 1.0 / (1.0 + 0.35 * distance3 + 0.44 * (distance3 * distance3));"
-"float attenuation4 = 1.0 / (1.0 + 0.35 * distance4 + 0.44 * (distance4 * distance4));"
-"float attenuation5 = 1.0 / (1.0 + 0.35 * distance5 + 0.44 * (distance5 * distance5));"
-"vec3 ambient = samples[0] * 0.1;\n"
+"float attenuation1 = 1.0 / (1.0 + 0.07 * distance1 + 0.017 * (distance1 * distance1));"
+"float attenuation2 = 1.0 / (1.0 + 0.07 * distance2 + 0.017 * (distance2 * distance2));"
+"float attenuation3 = 1.0 / (1.0 + 0.07 * distance3 + 0.017 * (distance3 * distance3));"
+"float attenuation4 = 1.0 / (1.0 + 0.07 * distance4 + 0.017 * (distance4 * distance4));"
+"float attenuation5 = 1.0 / (1.0 + 0.07 * distance5 + 0.017 * (distance5 * distance5));"
+"vec3 ambient = vec3(samples[0]) * 0.1;\n"
+
 "vec3 light1Dir = normalize(light1 - FragPos);\n"
 "vec3 light2Dir = normalize(light2 - FragPos);\n"
 "vec3 light3Dir = normalize(light3 - FragPos);\n"
 "vec3 light4Dir = normalize(light4 - FragPos);\n"
 "vec3 light5Dir = normalize(light5 - FragPos);\n"
 "vec3 viewDir = normalize(viewPos - FragPos);\n"
-"vec3 reflect1Dir = reflect(-light1Dir, norm);\n"
-"vec3 reflect2Dir = reflect(-light2Dir, norm);\n"
-"vec3 reflect3Dir = reflect(-light3Dir, norm);\n"
-"vec3 reflect4Dir = reflect(-light4Dir, norm);\n"
-"vec3 reflect5Dir = reflect(-light5Dir, norm);\n"
-"vec3 diffuseLight = (max(dot(norm, light1Dir), 0.0) + attenuation1) * samples[0] + (max(dot(norm, light2Dir), 0.0) + attenuation2) * samples[0] + (max(dot(norm, light3Dir), 0.0) + attenuation3) * samples[0] + (max(dot(norm, light4Dir), 0.0) + attenuation4) * samples[0] + (max(dot(norm, light5Dir), 0.0) + attenuation5) * samples[0];\n"
-"vec3 specularLight = (pow(max(dot(viewDir, reflect1Dir), 0.0), 32) + attenuation1) * samples[1] + (pow(max(dot(viewDir, reflect2Dir), 0.0), 32) + attenuation2) * samples[1] + (pow(max(dot(viewDir, reflect3Dir), 0.0), 32) + attenuation3) * samples[1] + (pow(max(dot(viewDir, reflect4Dir), 0.0), 32) + attenuation4) * samples[1] + (pow(max(dot(viewDir, reflect5Dir), 0.0), 32) + attenuation5) * samples[1];"
+"vec3 reflect1Dir = reflect(-light1Dir, normie);\n"
+"vec3 reflect2Dir = reflect(-light2Dir, normie);\n"
+"vec3 reflect3Dir = reflect(-light3Dir, normie);\n"
+"vec3 reflect4Dir = reflect(-light4Dir, normie);\n"
+"vec3 reflect5Dir = reflect(-light5Dir, normie);\n"
+"vec3 diffuseLight = (max(dot(normie, light1Dir), 0.0) + attenuation1) * vec3(samples[0]) + (max(dot(normie, light2Dir), 0.0) + attenuation2) * vec3(samples[0]) + (max(dot(normie, light3Dir), 0.0) + attenuation3) * vec3(samples[0]) + (max(dot(normie, light4Dir), 0.0) + attenuation4) * vec3(samples[0]) + (max(dot(normie, light5Dir), 0.0) + attenuation5) * vec3(samples[0]);\n"
+"vec3 specularLight = (pow(max(dot(viewDir, reflect1Dir), 0.0), 32) + attenuation1) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect2Dir), 0.0), 32) + attenuation2) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect3Dir), 0.0), 32) + attenuation3) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect4Dir), 0.0), 32) + attenuation4) * vec3(samples[1]) + (pow(max(dot(viewDir, reflect5Dir), 0.0), 32) + attenuation5) * vec3(samples[1]);"
+
 "FragColor = vec4(ambient + diffuseLight + specularLight*0.5, 1.0);\n}\0";
 
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
@@ -87,16 +92,17 @@ void initMap(GameMap* m){
   lightPositions[4] = glm::vec3(-27.5f, 4.8f, 0.0f);
   glGenBuffers(1, &(m->lights));
   glBindBuffer(GL_UNIFORM_BUFFER, m->lights);
-  glBufferData(GL_UNIFORM_BUFFER, 80, NULL, GL_STATIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, 96, NULL, GL_STATIC_DRAW);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec3), lightPositions);
   glBufferSubData(GL_UNIFORM_BUFFER, 16, sizeof(glm::vec3), lightPositions + 1);
   glBufferSubData(GL_UNIFORM_BUFFER, 32, sizeof(glm::vec3), lightPositions + 2);
   glBufferSubData(GL_UNIFORM_BUFFER, 48, sizeof(glm::vec3), lightPositions + 3);
   glBufferSubData(GL_UNIFORM_BUFFER, 64, sizeof(glm::vec3), lightPositions + 4);
+  //  glBufferSubData(GL_UNIFORM_BUFFER, 80, sizeof(glm::vec4), &(camera->Posicao));
 
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
-  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m->lights, 0, 80);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m->lights, 0, 96);
   std::vector<Vertex> v;
   std::vector<GLuint> i;
   Texture tdw, tsw, tdf, tsf;
@@ -128,8 +134,8 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
     img = loadImg("floor.png", &w, &h, &c);
     glGenTextures(1, &(tdf.texHnd));
     glBindTexture(GL_TEXTURE_2D, tdf.texHnd);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
@@ -477,6 +483,8 @@ void Game::mainLoop(){
     if(updateView){
       glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);
       glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(camera->GetViewMatrix()));
+      glBindBuffer(GL_UNIFORM_BUFFER, this->m->lights);
+      glBufferSubData(GL_UNIFORM_BUFFER, 80, sizeof(glm::vec3), &(camera->Posicao));
     }
     if(updateProj){
       glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);
