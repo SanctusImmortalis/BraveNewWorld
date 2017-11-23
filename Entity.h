@@ -15,8 +15,8 @@ class Entity:public GameObject{
     //ShaderProgram* getActiveShader() { return this->prog[this->activeShader];}
     ~Entity();
     void draw();
-  private:
     Brush* br;
+  private:
     size_t activeShaders[3];
     size_t shaderNum;
     ShaderProgram** prog;

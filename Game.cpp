@@ -92,6 +92,34 @@ const char* fSS = "#version 330 core\n"
 "void main(){"
     "FragColor = vec4(0.6, 0.6, 0.6, 1.0);"
 "}";
+
+const char* mgeometryShaderSource = "#version 330 core\n"
+"layout (triangles) in;\n"
+"layout (line_strip, max_vertices = 2) out;\n"
+"in vec3 norm[];\n"
+"void main() {"
+    "gl_Position = gl_in[0].gl_Position;"
+    "EmitVertex();"
+    "gl_Position = gl_in[1].gl_Position;"
+    "EmitVertex();"
+    "EndPrimitive();"
+    "gl_Position = gl_in[1].gl_Position;"
+    "EmitVertex();"
+    "gl_Position = gl_in[2].gl_Position;"
+    "EmitVertex();"
+    "EndPrimitive();"
+    "gl_Position = gl_in[2].gl_Position;"
+    "EmitVertex();"
+    "gl_Position = gl_in[0].gl_Position;"
+    "EmitVertex();"
+    "EndPrimitive();"
+"}";
+
+const char* mfSS = "#version 330 core\n"
+"out vec4 FragColor;"
+"void main(){"
+    "FragColor = vec4(0.0, 1.0, 1.0, 1.0);"
+"}";
 /*
 const char* efragmentShaderSource = "#version 330 core\n"
 "in vec2 tc;\n"
@@ -146,6 +174,7 @@ const char* efragmentShaderSource = "#version 330 core\n"
 "FragColor = vec4(0.7, 0.0, 0.5, 1.0);\n}\0";
 */
 unsigned int fur = 0;
+unsigned int wiref = 0;
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -508,22 +537,31 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   Shader bfs(2, false, bfragmentShaderSource);
   Shader gs(1, false, geometryShaderSource);
   Shader fs(2, false, fSS);
+  Shader mgs(1, false, mgeometryShaderSource);
+  Shader mfs(2, false, mfSS);
   //Shader efs(2, false, efragmentShaderSource);
   ShaderProgram* brushShader = new ShaderProgram(&bvs, NULL, &bfs);
   ShaderProgram* bunnyShader = new ShaderProgram(&bvs, &gs, &fs);
+  ShaderProgram* monkeyShader = new ShaderProgram(&bvs, &mgs, &mfs);
   //ShaderProgram* entityShader = new ShaderProgram(&bvs, NULL, &efs);
   brushShader->use();
 
   brushShader->setBlockIndex("Matrices", 0);
   brushShader->setBlockIndex("Lights", 1);
+  bunnyShader->use();
+  bunnyShader->setBlockIndex("Matrices", 0);
+  monkeyShader->use();
+  monkeyShader->setBlockIndex("Matrices", 0);
 
   m->shaders[0] = brushShader;
   m->shaders[1] = bunnyShader;
+  m->shaders[2] = monkeyShader;
   //m->shaders[1] = entityShader;
-  m->shadernum = 2;
+  m->shadernum = 3;
 
   Model* tp1 = new Model("wt_teapot.obj", NULL);
   Model* tp2 = new Model("bunny.obj", NULL);
+  Model* tp3 = new Model("monkey_head2.obj", NULL);
   /*
   std::vector<Vertex> v2;
   std::vector<GLuint> i2;
@@ -542,7 +580,9 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
 
   m->ents[3]->setShaders(0, 1, 0);
 
-  m->entnum = 4;
+  m->ents[4] = new Entity(tp3, m->shaders + 2, ttd3, tts3, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(0.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+  m->entnum = 5;
 
   //Brush* obj = new Brush(v, tdw, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
   m->brushes[0] = new Brush(v, tdf, tsf, i, glm::vec3(0.0f, -5.5f, 0.0f), glm::vec3(90.0f, 00.0f, 0.0f), glm::vec3(7.5f, 7.5f, 1.0f));
@@ -683,6 +723,9 @@ void Game::mainLoop(){
     lastFrame = frameAtual;
 
       m->ents[3]->setActiveShaders(fur + 1);
+      wiref = (wiref + 2) % 360;
+      m->ents[4]->br->rotation = glm::vec3(0.0f, (float)wiref, 0.0f);
+      m->ents[4]->br->updateModel = true;
 
     if(updateView){
       glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);

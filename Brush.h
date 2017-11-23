@@ -13,12 +13,13 @@ public:
   ~Brush();
   void draw(ShaderProgram* shp);
   //static ShaderProgram brushShader;
-private:
   glm::vec3 position, rotation, scalefactor;
+  bool updateModel;
+private:
+
   glm::mat4 model;
   glm::mat3 normalMat;
   //AABB bb;
-  bool updateModel;
   GLuint VAO, VBO, EBO;
   std::vector<Vertex> vertices;
   Texture diffuse, specular;
