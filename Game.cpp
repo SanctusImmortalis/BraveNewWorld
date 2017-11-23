@@ -97,29 +97,45 @@ const char* mgeometryShaderSource = "#version 330 core\n"
 "layout (triangles) in;\n"
 "layout (line_strip, max_vertices = 2) out;\n"
 "in vec3 norm[];\n"
+"in vec2 tc[];\n"
+"out vec2 tec;"
 "void main() {"
     "gl_Position = gl_in[0].gl_Position;"
+    "tec = tc[0];"
     "EmitVertex();"
     "gl_Position = gl_in[1].gl_Position;"
+    "tec = tc[1];"
     "EmitVertex();"
     "EndPrimitive();"
     "gl_Position = gl_in[1].gl_Position;"
+    "tec = tc[1];"
     "EmitVertex();"
     "gl_Position = gl_in[2].gl_Position;"
+    "tec = tc[2];"
     "EmitVertex();"
     "EndPrimitive();"
     "gl_Position = gl_in[2].gl_Position;"
+    "tec = tc[2];"
     "EmitVertex();"
     "gl_Position = gl_in[0].gl_Position;"
+    "tec = tc[0];"
     "EmitVertex();"
     "EndPrimitive();"
 "}";
 
 const char* mfSS = "#version 330 core\n"
-"out vec4 FragColor;"
-"void main(){"
-    "FragColor = vec4(0.0, 1.0, 1.0, 1.0);"
-"}";
+"in vec2 tec;\n"
+"in vec3 norm;\n"
+"in vec3 FragPos;\n"
+"out vec4 FragColor;\n"
+"uniform sampler2D diff;\n"
+"uniform sampler2D spec;\n"
+"layout (std140) uniform Lights{\n"
+"vec3 light1;\nvec3 light2;\nvec3 light3;\nvec3 light4;\nvec3 light5;\n"
+"vec3 viewPos;\n"
+"};\n"
+"void main(){\n"
+"FragColor = texture(diff, tec);\n}\0";
 /*
 const char* efragmentShaderSource = "#version 330 core\n"
 "in vec2 tc;\n"
@@ -216,7 +232,7 @@ void initMap(GameMap* m){
   std::vector<Vertex> v;
   std::vector<GLuint> i;
   Texture tdw, tsw, tdf, tsf, tdm, tsm;
-  Texture ttd1, tts1, ttd2, tts2, ttd3, tts3;
+  Texture ttd1, tts1, ttd2, tts2, ttd3, tts3, ttd4, ttd5, ttd6;
   int w, h, c;
   unsigned char* img = loadImg("wall.png", &w, &h, &c);
   unsigned char img1[] = {30, 30, 30, 255};
@@ -228,6 +244,9 @@ void initMap(GameMap* m){
   unsigned char ts2[] = {255, 255, 255, 255};
   unsigned char td3[] = {94, 94, 94, 255};
   unsigned char ts3[] = {10, 10, 10, 255};
+  unsigned char td4[] = {0, 255, 255, 255};
+  unsigned char td5[] = {255, 255, 94, 255};
+  unsigned char td6[] = {255, 0, 255, 255};
   glGenTextures(1, &(tdw.texHnd));
   glBindTexture(GL_TEXTURE_2D, tdw.texHnd);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -346,6 +365,33 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
                       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, img3);
                         glGenerateMipmap(GL_TEXTURE_2D);
+
+                        glGenTextures(1, &(ttd4.texHnd));
+                        glBindTexture(GL_TEXTURE_2D, ttd4.texHnd);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td4);
+                          glGenerateMipmap(GL_TEXTURE_2D);
+
+                          glGenTextures(1, &(ttd5.texHnd));
+                          glBindTexture(GL_TEXTURE_2D, ttd5.texHnd);
+                          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td5);
+                            glGenerateMipmap(GL_TEXTURE_2D);
+
+                            glGenTextures(1, &(ttd6.texHnd));
+                            glBindTexture(GL_TEXTURE_2D, ttd6.texHnd);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td6);
+                              glGenerateMipmap(GL_TEXTURE_2D);
 
   Vertex vt;
   vt.position = glm::vec3(-5.0f, -5.0f, 0.5f);
@@ -580,9 +626,13 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
 
   m->ents[3]->setShaders(0, 1, 0);
 
-  m->ents[4] = new Entity(tp3, m->shaders + 2, ttd3, tts3, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(0.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[4] = new Entity(tp3, m->shaders, ttd4, tts3, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-  m->entnum = 5;
+  m->ents[5] = new Entity(tp3, m->shaders, ttd5, tts3, glm::vec3(-27.5f, -2.0f, 5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+  m->ents[6] = new Entity(tp3, m->shaders, ttd6, tts3, glm::vec3(-27.5f, -2.0f, -5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+  m->entnum = 7;
 
   //Brush* obj = new Brush(v, tdw, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(30.0f, 0.0f, 45.0f), glm::vec3(0.5f, 0.5f, 0.5f));
   m->brushes[0] = new Brush(v, tdf, tsf, i, glm::vec3(0.0f, -5.5f, 0.0f), glm::vec3(90.0f, 00.0f, 0.0f), glm::vec3(7.5f, 7.5f, 1.0f));
@@ -726,6 +776,10 @@ void Game::mainLoop(){
       wiref = (wiref + 2) % 360;
       m->ents[4]->br->rotation = glm::vec3(0.0f, (float)wiref, 0.0f);
       m->ents[4]->br->updateModel = true;
+      m->ents[5]->br->rotation = glm::vec3(0.0f, 90.0f, (float)wiref);
+      m->ents[5]->br->updateModel = true;
+      m->ents[6]->br->rotation = glm::vec3((float)wiref, 90.0f, 0.0f);
+      m->ents[6]->br->updateModel = true;
 
     if(updateView){
       glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);

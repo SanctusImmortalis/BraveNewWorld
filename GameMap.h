@@ -20,7 +20,7 @@ public:
   Camera cam;
   ShaderProgram* shaders[3];
   int shadernum;
-  Entity* ents[5];
+  Entity* ents[7];
   int entnum;
   Brush* brushes[33];
   int brushnum;
