@@ -145,7 +145,7 @@ const char* efragmentShaderSource = "#version 330 core\n"
 "}\n"
 "FragColor = vec4(0.7, 0.0, 0.5, 1.0);\n}\0";
 */
-
+unsigned int fur = 0;
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -186,12 +186,13 @@ void initMap(GameMap* m){
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m->lights, 0, 96);
   std::vector<Vertex> v;
   std::vector<GLuint> i;
-  Texture tdw, tsw, tdf, tsf;
+  Texture tdw, tsw, tdf, tsf, tdm, tsm;
   Texture ttd1, tts1, ttd2, tts2, ttd3, tts3;
   int w, h, c;
   unsigned char* img = loadImg("wall.png", &w, &h, &c);
   unsigned char img1[] = {30, 30, 30, 255};
   unsigned char img2[] = {240, 240, 240, 255};
+  unsigned char img3[] = {255, 255, 255, 255};
   unsigned char td1[] = {160, 160, 0, 255};
   unsigned char ts1[] = {239, 239, 117, 255};
   unsigned char td2[] = {24, 130, 82, 255};
@@ -295,7 +296,27 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
                   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, ts3);
                     glGenerateMipmap(GL_TEXTURE_2D);
 
+                    img = loadImg("marble.png", &w, &h, &c);
+                    glGenTextures(1, &(tdm.texHnd));
+                    glBindTexture(GL_TEXTURE_2D, tdm.texHnd);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+                      glGenerateMipmap(GL_TEXTURE_2D);
 
+                      glBindTexture(GL_TEXTURE_2D, 0);
+
+                      freeImg(img);
+                      glGenTextures(1, &(tsm.texHnd));
+                      glBindTexture(GL_TEXTURE_2D, tsm.texHnd);
+                      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, img3);
+                        glGenerateMipmap(GL_TEXTURE_2D);
 
   Vertex vt;
   vt.position = glm::vec3(-5.0f, -5.0f, 0.5f);
@@ -520,7 +541,6 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   m->ents[3] = new Entity(tp2, m->shaders, ttd3, tts3, glm::vec3(0.0f, -2.0f, -27.5f), glm::vec3(0.0f, 90.0f, 0.0f), glm::vec3(7.0f, 7.0f, 7.0f));
 
   m->ents[3]->setShaders(0, 1, 0);
-  m->ents[3]->setActiveShaders(2);
 
   m->entnum = 4;
 
@@ -562,8 +582,12 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   m->brushes[28] = new Brush(v, tdw, tsw, i, glm::vec3(-12.0f, 0.0f, -8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
   m->brushes[29] = new Brush(v, tdw, tsw, i, glm::vec3(-12.0f, 0.0f, 8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
 
+  m->brushes[30] = new Brush(v, tdm, tsm, i, glm::vec3(27.5f, -4.0f, 0.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+  m->brushes[31] = new Brush(v, tdm, tsm, i, glm::vec3(27.5f, -4.0f, 5.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+  m->brushes[32] = new Brush(v, tdm, tsm, i, glm::vec3(27.5f, -4.0f, -5.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+
   //m->brushes[1] = new Brush(v, td, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushnum = 30;
+  m->brushnum = 33;
 }
 
 void processInput(GLFWwindow *window){
@@ -578,7 +602,13 @@ void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera->InputTeclado(DIREITA, deltaTime);
 
+
         updateView = true;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if (key == GLFW_KEY_E && action == GLFW_PRESS)
+        fur = (fur + 1) % 2;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -625,6 +655,7 @@ Game::Game(){
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetKeyCallback(window, key_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
@@ -650,6 +681,8 @@ void Game::mainLoop(){
     float frameAtual = glfwGetTime();
     deltaTime = frameAtual - lastFrame;
     lastFrame = frameAtual;
+
+      m->ents[3]->setActiveShaders(fur + 1);
 
     if(updateView){
       glBindBuffer(GL_UNIFORM_BUFFER, this->m->matrices);
