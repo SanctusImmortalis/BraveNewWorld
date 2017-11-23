@@ -191,6 +191,7 @@ const char* efragmentShaderSource = "#version 330 core\n"
 */
 unsigned int fur = 0;
 unsigned int wiref = 0;
+unsigned int geo = 0;
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -626,11 +627,11 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
 
   m->ents[3]->setShaders(0, 1, 0);
 
-  m->ents[4] = new Entity(tp3, m->shaders, ttd4, tts3, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[4] = new Entity(tp3, m->shaders, ttd4, tts2, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-  m->ents[5] = new Entity(tp3, m->shaders, ttd5, tts3, glm::vec3(-27.5f, -2.0f, 5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[5] = new Entity(tp3, m->shaders, ttd5, tts2, glm::vec3(-27.5f, -2.0f, 5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-  m->ents[6] = new Entity(tp3, m->shaders, ttd6, tts3, glm::vec3(-27.5f, -2.0f, -5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[6] = new Entity(tp3, m->shaders, ttd6, tts2, glm::vec3(-27.5f, -2.0f, -5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
   m->entnum = 7;
 
@@ -699,6 +700,8 @@ void processInput(GLFWwindow *window){
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_E && action == GLFW_PRESS)
         fur = (fur + 1) % 2;
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+        geo = (geo + 2) % 4;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -773,6 +776,9 @@ void Game::mainLoop(){
     lastFrame = frameAtual;
 
       m->ents[3]->setActiveShaders(fur + 1);
+      m->ents[4]->setShaders(geo, 0, 0);
+      m->ents[5]->setShaders(geo, 0, 0);
+      m->ents[6]->setShaders(geo, 0, 0);
       wiref = (wiref + 2) % 360;
       m->ents[4]->br->rotation = glm::vec3(0.0f, (float)wiref, 0.0f);
       m->ents[4]->br->updateModel = true;

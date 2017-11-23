@@ -97,10 +97,12 @@ void Brush::draw(ShaderProgram* shp){
     {
       glm::vec4 x_axis(1.0f, 0.0f, 0.0f, 1.0f);
       glm::vec4 y_axis(0.0f, 1.0f, 0.0f, 1.0f);
+      glm::vec4 z_axis(0.0f, 0.0f, 1.0f, 1.0f);
       glm::mat4 rotz = glm::rotate(this->model, glm::radians(this->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
       y_axis = rotz * y_axis;
+      x_axis = rotz * x_axis;
       glm::mat4 roty = glm::rotate(this->model, glm::radians(this->rotation.y), glm::vec3(y_axis.x, y_axis.y, y_axis.z));
-      x_axis = roty * rotz * x_axis;
+      x_axis = roty * x_axis;
       glm::mat4 rotx = glm::rotate(this->model, glm::radians(this->rotation.x), glm::vec3(x_axis.x, x_axis.y, x_axis.z));
       rot = rotx * roty * rotz;
     }
