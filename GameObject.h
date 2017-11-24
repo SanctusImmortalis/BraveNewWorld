@@ -7,7 +7,7 @@
 class GameObject{
 public:
   GameObject() {}
-  bool checkCollision(AABB other);
+  //bool checkCollision(AABB other);
 protected:
 
 };

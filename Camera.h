@@ -2,6 +2,9 @@
 #define CAMERA_H
 
 #include "Base.h"
+#include "AABB.h"
+
+
 
 enum Movimento_Cam{
   FRENTE,
@@ -55,17 +58,33 @@ glm::mat4 GetViewMatrix()
   return glm::lookAt(Posicao, Posicao + Frente, Up);
 }
 
-void InputTeclado(Movimento_Cam direcao, float deltaTime)
+void InputTeclado(Movimento_Cam direcao, float deltaTime, AABB* bbs)
 {
   float velocidade = VelocidadeMovimento * deltaTime;
+  glm::vec3 tPosicao = Posicao;
+  bool collided = false;
   if(direcao == FRENTE)
-    Posicao += glm::normalize(glm::vec3(Frente.x, 0.0f, Frente.z)) * velocidade;
+    tPosicao += glm::normalize(glm::vec3(Frente.x, 0.0f, Frente.z)) * velocidade;
   if(direcao == TRAS)
-    Posicao -= glm::normalize(glm::vec3(Frente.x, 0.0f, Frente.z)) * velocidade;
+    tPosicao -= glm::normalize(glm::vec3(Frente.x, 0.0f, Frente.z)) * velocidade;
   if(direcao == ESQUERDA)
-    Posicao -= Direita * velocidade;
+    tPosicao -= Direita * velocidade;
   if(direcao == DIREITA)
-    Posicao += Direita * velocidade;
+    tPosicao += Direita * velocidade;
+
+  AABB camBB;
+  camBB.size = glm::vec2(1.0f, 1.0f);
+  camBB.position = glm::vec2(tPosicao.x, tPosicao.z) - camBB.size * 0.5f;
+
+  for(int i=0;i<32;i++){
+    bool collX = (camBB.position.x + camBB.size.x >= bbs[i].position.x) && (bbs[i].position.x + bbs[i].size.x >= camBB.position.x);
+    bool collZ = (camBB.position.y + camBB.size.y >= bbs[i].position.y) && (bbs[i].position.y + bbs[i].size.y >= camBB.position.y);
+    collided = collided || (collX && collZ);
+    if(collided) break;
+  }
+
+  if(!collided)
+    Posicao = tPosicao;
 }
 
 void InputMouse(float xoffset, float yoffset, GLboolean constrainPitch = true)

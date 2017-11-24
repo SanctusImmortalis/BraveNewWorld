@@ -204,6 +204,8 @@ float lastFrame = 0.0f;
 
 bool updateView = true, updateProj = true;
 
+AABB bbs[32];
+
 void initMap(GameMap* m){
   glGenBuffers(1, &(m->matrices));
   glBindBuffer(GL_UNIFORM_BUFFER, m->matrices);
@@ -234,6 +236,7 @@ void initMap(GameMap* m){
   std::vector<GLuint> i;
   Texture tdw, tsw, tdf, tsf, tdm, tsm;
   Texture ttd1, tts1, ttd2, tts2, ttd3, tts3, ttd4, ttd5, ttd6;
+  Texture lenna, lemmy, ednaldo;
   int w, h, c;
   unsigned char* img = loadImg("wall.png", &w, &h, &c);
   unsigned char img1[] = {30, 30, 30, 255};
@@ -393,6 +396,53 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, td6);
                               glGenerateMipmap(GL_TEXTURE_2D);
+
+                              float borderColor[] = { (float)79/(float)255, (float)51/(float)255, (float)19/(float)255, 1.0f };
+
+                              img = loadImg("Lenna.png", &w, &h, &c);
+                              glGenTextures(1, &(lenna.texHnd));
+                              glBindTexture(GL_TEXTURE_2D, lenna.texHnd);
+                              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+                                glGenerateMipmap(GL_TEXTURE_2D);
+                                glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+                                glBindTexture(GL_TEXTURE_2D, 0);
+
+                                freeImg(img);
+
+                                img = loadImg("lemmy-vodka.png", &w, &h, &c);
+                                glGenTextures(1, &(lemmy.texHnd));
+                                glBindTexture(GL_TEXTURE_2D, lemmy.texHnd);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+                                  glGenerateMipmap(GL_TEXTURE_2D);
+                                  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+                                  glBindTexture(GL_TEXTURE_2D, 0);
+
+                                  freeImg(img);
+
+                                  img = loadImg("Ednaldo_Pereira_3.png", &w, &h, &c);
+                                  glGenTextures(1, &(ednaldo.texHnd));
+                                  glBindTexture(GL_TEXTURE_2D, ednaldo.texHnd);
+                                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+                                    glGenerateMipmap(GL_TEXTURE_2D);
+                                    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+                                    glBindTexture(GL_TEXTURE_2D, 0);
+
+                                    freeImg(img);
 
   Vertex vt;
   vt.position = glm::vec3(-5.0f, -5.0f, 0.5f);
@@ -623,7 +673,7 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
 
   m->ents[2] = new Entity(tp1, m->shaders, ttd3, tts3, glm::vec3(27.5f, -2.0f, -5.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.7f, 1.7f, 1.7f));
 
-  m->ents[3] = new Entity(tp2, m->shaders, ttd3, tts3, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(7.0f, 7.0f, 7.0f));
+  m->ents[3] = new Entity(tp2, m->shaders, ttd3, tts3, glm::vec3(-27.5f, -2.1f, 0.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(7.0f, 7.0f, 7.0f));
 
   m->ents[3]->setShaders(0, 1, 0);
 
@@ -640,58 +690,153 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   m->brushes[1] = new Brush(v, tdf, tsf, i, glm::vec3(0.0f, 5.5f, 0.0f), glm::vec3(90.0f, 00.0f, 0.0f), glm::vec3(7.5f, 7.5f, 1.0f));
 
   m->brushes[2] = new Brush(v, tdw, tsw, i, glm::vec3(0.0f, 0.0f, 38.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+  bbs[0].size = glm::vec2(30.0f, 1.0f);
+  bbs[0].position = glm::vec2(0.0f, 38.0f) - bbs[0].size * 0.5f;
   m->brushes[3] = new Brush(v, tdw, tsw, i, glm::vec3(-15.5f, 0.0f, 27.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[1].size = glm::vec2(1.0f, 20.0f);
+  bbs[1].position = glm::vec2(-15.5f, 27.5f) - bbs[1].size * 0.5f;
   m->brushes[4] = new Brush(v, tdw, tsw, i, glm::vec3(15.5f, 0.0f, 27.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[2].size = glm::vec2(1.0f, 20.0f);
+  bbs[2].position = glm::vec2(15.5f, 27.5f) - bbs[1].size * 0.5f;
   m->brushes[5] = new Brush(v, tdw, tsw, i, glm::vec3(-11.25f, 0.0f, 17.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[3].size = glm::vec2(7.5f, 1.0f);
+  bbs[3].position = glm::vec2(-11.25f, 17.0f) - bbs[3].size * 0.5f;
   m->brushes[6] = new Brush(v, tdw, tsw, i, glm::vec3(11.25f, 0.0f, 17.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[4].size = glm::vec2(7.5f, 1.0f);
+  bbs[4].position = glm::vec2(11.25f, 17.0f) - bbs[4].size * 0.5f;
 
   m->brushes[7] = new Brush(v, tdw, tsw, i, glm::vec3(0.0f, 0.0f, -38.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+  bbs[5].size = glm::vec2(30.0f, 1.0f);
+  bbs[5].position = glm::vec2(0.0f, -38.0f) - bbs[5].size * 0.5f;
   m->brushes[8] = new Brush(v, tdw, tsw, i, glm::vec3(-15.5f, 0.0f, -27.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[6].size = glm::vec2(1.0f, 20.0f);
+  bbs[6].position = glm::vec2(-15.5f, -27.5f) - bbs[6].size * 0.5f;
   m->brushes[9] = new Brush(v, tdw, tsw, i, glm::vec3(15.5f, 0.0f, -27.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[7].size = glm::vec2(1.0f, 20.0f);
+  bbs[7].position = glm::vec2(15.5f, -27.5f) - bbs[7].size * 0.5f;
   m->brushes[10] = new Brush(v, tdw, tsw, i, glm::vec3(-11.25f, 0.0f, -17.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[8].size = glm::vec2(7.5f, 1.0f);
+  bbs[8].position = glm::vec2(-11.25f, -17.0f) - bbs[8].size * 0.5f;
   m->brushes[11] = new Brush(v, tdw, tsw, i, glm::vec3(11.25f, 0.0f, -17.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[9].size = glm::vec2(7.5f, 1.0f);
+  bbs[9].position = glm::vec2(11.25f, -17.0f) - bbs[9].size * 0.5f;
 
   m->brushes[12] = new Brush(v, tdw, tsw, i, glm::vec3(-38.0f, 0.0f, 0.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+  bbs[10].size = glm::vec2(1.0f, 30.0f);
+  bbs[10].position = glm::vec2(-38.0f, 0.0f) - bbs[10].size * 0.5f;
   m->brushes[13] = new Brush(v, tdw, tsw, i, glm::vec3(-27.5f, 0.0f, -15.5f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[11].size = glm::vec2(20.0f, 1.0f);
+  bbs[11].position = glm::vec2(-27.5f, -15.5f) - bbs[11].size * 0.5f;
   m->brushes[14] = new Brush(v, tdw, tsw, i, glm::vec3(-27.5f, 0.0f, 15.5f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[12].size = glm::vec2(20.0f, 1.0f);
+  bbs[12].position = glm::vec2(-27.5f, 15.5f) - bbs[12].size * 0.5f;
   m->brushes[15] = new Brush(v, tdw, tsw, i, glm::vec3(-17.0f, 0.0f, -11.25f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[13].size = glm::vec2(1.0f, 7.5f);
+  bbs[13].position = glm::vec2(-17.0f, -11.25f) - bbs[13].size * 0.5f;
   m->brushes[16] = new Brush(v, tdw, tsw, i, glm::vec3(-17.0f, 0.0f, 11.25f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[14].size = glm::vec2(1.0f, 7.5f);
+  bbs[14].position = glm::vec2(-17.0f, 11.25f) - bbs[14].size * 0.5f;
 
   m->brushes[17] = new Brush(v, tdw, tsw, i, glm::vec3(38.0f, 0.0f, 0.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+  bbs[15].size = glm::vec2(1.0f, 30.0f);
+  bbs[15].position = glm::vec2(38.0f, 0.0f) - bbs[15].size * 0.5f;
   m->brushes[18] = new Brush(v, tdw, tsw, i, glm::vec3(27.5f, 0.0f, -15.5f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[16].size = glm::vec2(20.0f, 1.0f);
+  bbs[16].position = glm::vec2(27.5f, -15.5f) - bbs[16].size * 0.5f;
   m->brushes[19] = new Brush(v, tdw, tsw, i, glm::vec3(27.5f, 0.0f, 15.5f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+  bbs[17].size = glm::vec2(20.0f, 1.0f);
+  bbs[17].position = glm::vec2(27.5f, 15.5f) - bbs[17].size * 0.5f;
   m->brushes[20] = new Brush(v, tdw, tsw, i, glm::vec3(17.0f, 0.0f, -11.25f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[18].size = glm::vec2(1.0f, 7.5f);
+  bbs[18].position = glm::vec2(17.0f, -11.25f) - bbs[18].size * 0.5f;
   m->brushes[21] = new Brush(v, tdw, tsw, i, glm::vec3(17.0f, 0.0f, 11.25f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.75f, 1.0f, 1.0f));
+  bbs[19].size = glm::vec2(1.0f, 7.5f);
+  bbs[19].position = glm::vec2(17.0f, 11.25f) - bbs[19].size * 0.5f;
 
   m->brushes[22] = new Brush(v, tdw, tsw, i, glm::vec3(-8.0f, 0.0f, 12.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.8f, 1.0f, 1.0f));
+  bbs[20].size = glm::vec2(1.0f, 8.0f);
+  bbs[20].position = glm::vec2(-8.0f, 12.5f) - bbs[20].size * 0.5f;
   m->brushes[23] = new Brush(v, tdw, tsw, i, glm::vec3(8.0f, 0.0f, 12.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.8f, 1.0f, 1.0f));
+  bbs[21].size = glm::vec2(1.0f, 8.0f);
+  bbs[21].position = glm::vec2(8.0f, 12.5f) - bbs[21].size * 0.5f;
   m->brushes[24] = new Brush(v, tdw, tsw, i, glm::vec3(-8.0f, 0.0f, -12.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.8f, 1.0f, 1.0f));
+  bbs[22].size = glm::vec2(1.0f, 8.0f);
+  bbs[22].position = glm::vec2(-8.0f, -12.5f) - bbs[22].size * 0.5f;
   m->brushes[25] = new Brush(v, tdw, tsw, i, glm::vec3(8.0f, 0.0f, -12.5f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(0.8f, 1.0f, 1.0f));
+  bbs[23].size = glm::vec2(1.0f, 8.0f);
+  bbs[23].position = glm::vec2(8.0f, -12.5f) - bbs[23].size * 0.5f;
 
   m->brushes[26] = new Brush(v, tdw, tsw, i, glm::vec3(12.0f, 0.0f, -8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
+  bbs[24].size = glm::vec2(9.0f, 1.0f);
+  bbs[24].position = glm::vec2(12.0f, -8.0f) - bbs[24].size * 0.5f;
   m->brushes[27] = new Brush(v, tdw, tsw, i, glm::vec3(12.0f, 0.0f, 8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
+  bbs[25].size = glm::vec2(9.0f, 1.0f);
+  bbs[25].position = glm::vec2(12.0f, 8.0f) - bbs[25].size * 0.5f;
   m->brushes[28] = new Brush(v, tdw, tsw, i, glm::vec3(-12.0f, 0.0f, -8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
+  bbs[26].size = glm::vec2(9.0f, 1.0f);
+  bbs[26].position = glm::vec2(-12.0f, -8.0f) - bbs[26].size * 0.5f;
   m->brushes[29] = new Brush(v, tdw, tsw, i, glm::vec3(-12.0f, 0.0f, 8.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.9f, 1.0f, 1.0f));
+  bbs[27].size = glm::vec2(9.0f, 1.0f);
+  bbs[27].position = glm::vec2(-12.0f, 8.0f) - bbs[27].size * 0.5f;
 
   m->brushes[30] = new Brush(v, tdm, tsm, i, glm::vec3(27.5f, -4.0f, 0.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+  bbs[28].size = glm::vec2(3.0f, 2.5f);
+  bbs[28].position = glm::vec2(27.5f, 0.0f) - bbs[28].size * 0.5f;
   m->brushes[31] = new Brush(v, tdm, tsm, i, glm::vec3(27.5f, -4.0f, 5.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+  bbs[29].size = glm::vec2(3.0f, 2.5f);
+  bbs[29].position = glm::vec2(27.5f, 5.0f) - bbs[29].size * 0.5f;
   m->brushes[32] = new Brush(v, tdm, tsm, i, glm::vec3(27.5f, -4.0f, -5.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+  bbs[30].size = glm::vec2(3.0f, 2.5f);
+  bbs[30].position = glm::vec2(27.5f, -5.0f) - bbs[30].size * 0.5f;
+  m->brushes[33] = new Brush(v, tdm, tsm, i, glm::vec3(-27.5f, -4.0f, 0.0f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(0.3f, 0.4f, 2.5f));
+  bbs[31].size = glm::vec2(3.0f, 2.5f);
+  bbs[31].position = glm::vec2(-27.5f, 0.0f) - bbs[31].size * 0.5f;
+
+  std::vector<Vertex> v2;
+  std::vector<GLuint> i2;
+  vt.position = glm::vec3(0.0f, -1.0f, -1.0f);
+  vt.texCoords = glm::vec2(1.05f, -0.05f);
+  vt.normal = glm::vec3(1.0f, 0.0f, 0.0f);
+  v2.push_back(vt);
+  vt.position = glm::vec3(0.0f, -1.0f, 1.0f);
+  vt.texCoords = glm::vec2(-0.05f, -0.05f);
+  vt.normal = glm::vec3(1.0f, 0.0f, 0.0f);
+  v2.push_back(vt);
+  vt.position = glm::vec3(0.0f, 1.0f, -1.0f);
+  vt.texCoords = glm::vec2(1.05f, 1.05f);
+  vt.normal = glm::vec3(1.0f, 0.0f, 0.0f);
+  v2.push_back(vt);
+  vt.position = glm::vec3(0.0f, 1.0f, 1.0f);
+  vt.texCoords = glm::vec2(-0.05f, 1.05f);
+  vt.normal = glm::vec3(1.0f, 0.0f, 0.0f);
+  v2.push_back(vt);
+
+  i2.push_back(0);
+  i2.push_back(1);
+  i2.push_back(2);
+  i2.push_back(1);
+  i2.push_back(3);
+  i2.push_back(2);
+
+  m->brushes[34] = new Brush(v2, lenna, tsm, i2, glm::vec3(-14.8f, 0.0f, 27.5f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.5f, 1.5f));
+  m->brushes[35] = new Brush(v2, lemmy, tsm, i2, glm::vec3(14.8f, 0.0f, 22.5f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.0f, 1.35f, 2.4f));
+  m->brushes[36] = new Brush(v2, ednaldo, tsm, i2, glm::vec3(14.8f, 0.0f, 32.5f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.0f, 1.69f, 2.138f));
 
   //m->brushes[1] = new Brush(v, td, tsw, i, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-  m->brushnum = 33;
+  m->brushnum = 37;
 }
 
 void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera->InputTeclado(FRENTE, deltaTime);
+        camera->InputTeclado(FRENTE, deltaTime, bbs);
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera->InputTeclado(TRAS, deltaTime);
+        camera->InputTeclado(TRAS, deltaTime, bbs);
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera->InputTeclado(ESQUERDA, deltaTime);
+        camera->InputTeclado(ESQUERDA, deltaTime, bbs);
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera->InputTeclado(DIREITA, deltaTime);
+        camera->InputTeclado(DIREITA, deltaTime, bbs);
 
 
         updateView = true;

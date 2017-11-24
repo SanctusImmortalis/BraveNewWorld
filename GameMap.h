@@ -22,7 +22,7 @@ public:
   int shadernum;
   Entity* ents[7];
   int entnum;
-  Brush* brushes[33];
+  Brush* brushes[37];
   int brushnum;
 };
 
