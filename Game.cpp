@@ -623,15 +623,15 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
 
   m->ents[2] = new Entity(tp1, m->shaders, ttd3, tts3, glm::vec3(27.5f, -2.0f, -5.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.7f, 1.7f, 1.7f));
 
-  m->ents[3] = new Entity(tp2, m->shaders, ttd3, tts3, glm::vec3(0.0f, -2.0f, -27.5f), glm::vec3(0.0f, 90.0f, 0.0f), glm::vec3(7.0f, 7.0f, 7.0f));
+  m->ents[3] = new Entity(tp2, m->shaders, ttd3, tts3, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(7.0f, 7.0f, 7.0f));
 
   m->ents[3]->setShaders(0, 1, 0);
 
-  m->ents[4] = new Entity(tp3, m->shaders, ttd4, tts2, glm::vec3(-27.5f, -2.0f, 0.0f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[4] = new Entity(tp3, m->shaders, ttd4, tts2, glm::vec3(0.0f, -2.0f, -27.5f), glm::vec3(00.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-  m->ents[5] = new Entity(tp3, m->shaders, ttd5, tts2, glm::vec3(-27.5f, -2.0f, 5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[5] = new Entity(tp3, m->shaders, ttd5, tts2, glm::vec3(-5.0f, -2.0f, -27.5f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-  m->ents[6] = new Entity(tp3, m->shaders, ttd6, tts2, glm::vec3(-27.5f, -2.0f, -5.0f), glm::vec3(00.0f, 90.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  m->ents[6] = new Entity(tp3, m->shaders, ttd6, tts2, glm::vec3(5.0f, -2.0f, -27.5f), glm::vec3(00.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
   m->entnum = 7;
 
@@ -782,9 +782,9 @@ void Game::mainLoop(){
       wiref = (wiref + 2) % 360;
       m->ents[4]->br->rotation = glm::vec3(0.0f, (float)wiref, 0.0f);
       m->ents[4]->br->updateModel = true;
-      m->ents[5]->br->rotation = glm::vec3(0.0f, 90.0f, (float)wiref);
+      m->ents[5]->br->rotation = glm::vec3(0.0f, 0.0f, (float)wiref);
       m->ents[5]->br->updateModel = true;
-      m->ents[6]->br->rotation = glm::vec3((float)wiref, 90.0f, 0.0f);
+      m->ents[6]->br->rotation = glm::vec3((float)wiref, 0.0f, 0.0f);
       m->ents[6]->br->updateModel = true;
 
     if(updateView){

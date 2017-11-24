@@ -104,7 +104,7 @@ void Brush::draw(ShaderProgram* shp){
       glm::mat4 roty = glm::rotate(this->model, glm::radians(this->rotation.y), glm::vec3(y_axis.x, y_axis.y, y_axis.z));
       x_axis = roty * x_axis;
       glm::mat4 rotx = glm::rotate(this->model, glm::radians(this->rotation.x), glm::vec3(x_axis.x, x_axis.y, x_axis.z));
-      rot = rotx * roty * rotz;
+      rot = rotz * roty * rotx;
     }
     this->model = trans * rot * scale;
     this->normalMat = glm::mat3(glm::transpose(glm::inverse(this->model)));
