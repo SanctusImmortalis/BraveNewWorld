@@ -189,12 +189,64 @@ const char* efragmentShaderSource = "#version 330 core\n"
 "}\n"
 "FragColor = vec4(0.7, 0.0, 0.5, 1.0);\n}\0";
 */
+
+const char* ppVS = "#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\nlayout (location = 1) in vec2 aTexCoords;\n"
+"out vec2 tc;"
+"void main(){"
+"gl_Position = vec4(aPos, 1.0);\ntc = aTexCoords;}\n";
+
+const char* ppFS0 = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"in vec2 tc;\n"
+"uniform sampler2D samp;\n"
+"void main(){"
+"FragColor = texture(samp, tc);}\n";
+
+const char* ppFS1 = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"in vec2 tc;\n"
+"uniform sampler2D samp;\n"
+"uniform float radius;"
+"void main(){"
+"vec3 sample = vec3(texture(samp, tc));"
+"vec2 texC = tc - vec2(0.5, 0.5);"
+"if(texC.x * texC.x + texC.y * texC.y < radius * radius){"
+"float deriv = 1/(radius * sqrt(texC.x * texC.x + texC.y * texC.y));"
+"texC = texC + vec2(0.5, 0.5);"
+"sample = (1.0, 1.0, 1.0) - vec3(texture(samp, texC));"
+"}"
+"FragColor = vec4(sample, 1.0);}\n";
+
+const char* ppFS2 = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"in vec2 tc;\n"
+"uniform sampler2D samp;\n"
+"void main(){"
+"vec3 sample = vec3(texture(samp, tc));"
+"float avg = (sample.x + sample.y + sample.z) / 3;"
+"FragColor = vec4(vec3(avg), 1.0);}\n";
+
+const float sqrt2 = glm::sqrt(2.0f) / 2.0f;
+ShaderProgram* ppSP[3];
+GLuint FBOms, FBO, RBO, TEXms, TEX;
+GLuint VAO, VBO, EBO;
+float vt[] = {
+  -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+  1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+  -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+  1.0f, 1.0f, 0.0f, 1.0f, 1.0f
+};
+GLuint ind[] = {0, 1, 2, 1, 3, 2};
+GLuint scrShader = 0;
+float radius = 0.0f;
+float elapsedTime = 0.0f;
 unsigned int fur = 0;
 unsigned int wiref = 0;
 unsigned int geo = 0;
 Camera* camera = new Camera(glm::vec3(-7.0f, 0.0f, 35.0f));
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+unsigned int SCR_WIDTH = 900;
+unsigned int SCR_HEIGHT = 900;
 float ultX = SCR_WIDTH / 2.0;
 float ultY = SCR_HEIGHT / 2.0;
 bool firstMouse = true;
@@ -205,6 +257,41 @@ float lastFrame = 0.0f;
 bool updateView = true, updateProj = true;
 
 AABB bbs[32];
+
+void checkError(){
+  GLenum err = glGetError();
+  switch(err){
+    case GL_INVALID_ENUM:
+    std::cerr << "Invalid enum error." << std::endl;
+    break;
+    case GL_INVALID_VALUE:
+    std::cerr << "Invalid value error." << std::endl;
+    break;
+    case GL_INVALID_OPERATION:
+    std::cerr << "Invalid op error." << std::endl;
+    break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+    std::cerr << "Invalid FB error." << std::endl;
+    break;
+    case GL_OUT_OF_MEMORY:
+    std::cerr << "Out of memory." << std::endl;
+    break;
+    /*
+    case GL_STACK_UNDERFLOW:
+    std::cerr << "Underflow." << std::endl;
+    break;
+    case GL_STACK_OVERFLOW:
+    std::cerr << "Overflow." << std::endl;
+    break;
+*/
+    case GL_NO_ERROR:
+    //std::cerr << "Everything is fine." << std::endl;
+    break;
+
+    default:
+    std::cerr << "Idk." << std::endl;
+  }
+}
 
 void initMap(GameMap* m){
   glGenBuffers(1, &(m->matrices));
@@ -818,7 +905,7 @@ glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
   i2.push_back(3);
   i2.push_back(2);
 
-  m->brushes[34] = new Brush(v2, lenna, tsm, i2, glm::vec3(-14.8f, 0.0f, 27.5f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(1.0f, 1.5f, 1.5f));
+  m->brushes[34] = new Brush(v2, lenna, tsm, i2, glm::vec3(-14.8f, 0.0f, 27.5f), glm::vec3(0.0f, 00.0f, 0.0f), glm::vec3(1.0f, 2.5f, 2.5f));
   m->brushes[35] = new Brush(v2, lemmy, tsm, i2, glm::vec3(14.8f, 0.0f, 22.5f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.0f, 1.35f, 2.4f));
   m->brushes[36] = new Brush(v2, ednaldo, tsm, i2, glm::vec3(14.8f, 0.0f, 32.5f), glm::vec3(0.0f, 180.0f, 0.0f), glm::vec3(1.0f, 1.69f, 2.138f));
 
@@ -843,10 +930,13 @@ void processInput(GLFWwindow *window){
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    if (key == GLFW_KEY_E && action == GLFW_PRESS)
+    if (key == GLFW_KEY_E && action == GLFW_PRESS && scrShader != 2)
         fur = (fur + 1) % 2;
-    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS && scrShader != 2)
         geo = (geo + 2) % 4;
+    if (key == GLFW_KEY_R && action == GLFW_PRESS && scrShader == 0){
+        scrShader = 1;
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -854,6 +944,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
 
     updateProj = true;
 }
@@ -882,9 +974,12 @@ Game::Game(){
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  GLFWmonitor* mon = glfwGetPrimaryMonitor();
+  SCR_WIDTH = glfwGetVideoMode(mon)->width;
+  SCR_HEIGHT = glfwGetVideoMode(mon)->height;
   // glfw window creation
   // --------------------
-  this->window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Brave New World", NULL, NULL);
+  this->window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Brave New World", mon, NULL);
     if (this->window == NULL)
     {
         glfwTerminate();
@@ -903,7 +998,7 @@ Game::Game(){
         return;
     }
 
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
     //glFrontFace(GL_CCW);
 
@@ -915,16 +1010,109 @@ Game::~Game(){
 }
 
 void Game::mainLoop(){
+
+  Shader stdVS(0, false, ppVS);
+  Shader stdFS(2, false, ppFS0);
+  Shader zwFS1(2, false, ppFS1);
+  Shader zwFS2(2, false, ppFS2);
+
+  ppSP[0] = new ShaderProgram(&stdVS, NULL, &stdFS);
+
+  ppSP[0]->use();
+
+  glUniform1i(ppSP[0]->getUniform("samp"), 0);
+
+  ppSP[1] = new ShaderProgram(&stdVS, NULL, &zwFS1);
+
+  ppSP[1]->use();
+
+  glUniform1i(ppSP[1]->getUniform("samp"), 0);
+
+  ppSP[2] = new ShaderProgram(&stdVS, NULL, &zwFS2);
+
+  ppSP[2]->use();
+
+  glUniform1i(ppSP[2]->getUniform("samp"), 0);
+
+  glGenFramebuffers(1, &FBOms);
+  glBindFramebuffer(GL_FRAMEBUFFER, FBOms);
+  glGenTextures(1, &TEXms);
+  glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, TEXms);
+  glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 8, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+  glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, TEXms, 0);
+
+  glGenRenderbuffers(1, &RBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+  glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+  glDrawBuffer(GL_COLOR_ATTACHMENT0);
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer 1 is not complete!" << std::endl;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+  glGenFramebuffers(1, &FBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+  glGenTextures(1, &TEX);
+  glBindTexture(GL_TEXTURE_2D, TEX);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TEX, 0);
+  glDrawBuffer(GL_COLOR_ATTACHMENT0);
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer 2 is not complete!" << std::endl;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glGenBuffers(1, &EBO);
+
+
+
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vt), vt, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ind), ind, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
   while(!glfwWindowShouldClose(this->window)){
+    checkError();
     float frameAtual = glfwGetTime();
     deltaTime = frameAtual - lastFrame;
     lastFrame = frameAtual;
+
+    processInput(this->window);
+
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBOms);
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       m->ents[3]->setActiveShaders(fur + 1);
       m->ents[4]->setShaders(geo, 0, 0);
       m->ents[5]->setShaders(geo, 0, 0);
       m->ents[6]->setShaders(geo, 0, 0);
-      wiref = (wiref + 2) % 360;
+      wiref = (wiref + 2 - scrShader) % 360;
       m->ents[4]->br->rotation = glm::vec3(0.0f, (float)wiref, 0.0f);
       m->ents[4]->br->updateModel = true;
       m->ents[5]->br->rotation = glm::vec3(0.0f, 0.0f, (float)wiref);
@@ -943,16 +1131,50 @@ void Game::mainLoop(){
       glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(glm::perspective(glm::radians(45.0f), ((float)SCR_WIDTH)/((float)SCR_HEIGHT), 0.1f, 100.0f)));
     }
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    processInput(this->window);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for(int i = 0;i<(this->m)->entnum;i++){
       (this->m)->ents[i]->draw();
     }
     for(int i = 0;i<(this->m)->brushnum;i++){
       (this->m)->brushes[i]->draw(((this->m)->shaders[0]));
     }
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, FBOms);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
+    glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    glDrawBuffer(GL_BACK);
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT);
+    ppSP[scrShader]->use();
+
+    if(scrShader == 1){
+      radius += 0.5f * deltaTime;
+      glUniform1f(ppSP[1]->getUniform("radius"), radius);
+      if(radius >= sqrt2){
+        scrShader = 2;
+        radius = 0.0f;
+      }
+    }
+
+    if(scrShader == 2){
+      elapsedTime += deltaTime;
+      if(elapsedTime >= 5.0f){
+        scrShader = 0;
+        elapsedTime = 0.0f;
+      }
+    }
+
+    glBindVertexArray(VAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, TEX);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
 
     glfwPollEvents();
     glfwSwapBuffers(this->window);
